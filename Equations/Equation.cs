@@ -2,12 +2,8 @@
 using MathUtils.Equations.Parts.Functions;
 using MathUtils.Equations.Parts.Operations;
 using MathUtils.Exceptions;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace MathUtils.Equations
 {
@@ -110,7 +106,7 @@ namespace MathUtils.Equations
                             foundDecimal = true;
 
                         //if (currentChar != groupSeparator)
-                            builder.Append(currentChar);
+                        builder.Append(currentChar);
                         i++;
                     }
 
@@ -170,7 +166,7 @@ namespace MathUtils.Equations
             processFunctions(tokens, context);
             processBlocks(tokens, context);
             addMultiplications(tokens);
-            
+
             for (int i = 0; i < tokens.Count; i++)
             {
                 Token current = tokens[i];

@@ -1,12 +1,8 @@
 ﻿using MathUtils.Utils;
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace MathUtils.Vectors
 {
@@ -57,7 +53,7 @@ namespace MathUtils.Vectors
                 switch (index)
                 {
                     case 0:
-                        X = value; 
+                        X = value;
                         break;
                     case 1:
                         Y = value;

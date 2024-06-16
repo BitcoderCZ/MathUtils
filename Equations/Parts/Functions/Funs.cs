@@ -1,11 +1,4 @@
-﻿using MathUtils.Measures;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using static MathUtils.Measures.Measures;
+﻿using static MathUtils.Measures.Measures;
 using static MathUtils.Measures.Units.Angles;
 
 namespace MathUtils.Equations.Parts.Functions

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MathUtils.Equations.Parts.Operations;
+﻿using MathUtils.Equations.Parts.Operations;
 
 namespace MathUtils.Equations.Parts
 {

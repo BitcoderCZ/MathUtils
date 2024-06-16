@@ -1,9 +1,5 @@
-﻿using MathUtils.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MathUtils.Equations.Parts.Functions;
+using MathUtils.Exceptions;
 
 namespace MathUtils.Equations
 {

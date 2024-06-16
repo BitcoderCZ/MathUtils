@@ -1,12 +1,4 @@
-﻿using MathUtils.Equations.Parts;
-using MathUtils.Equations.Parts.Functions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MathUtils.Equations
+﻿namespace MathUtils.Equations.Parts.Functions
 {
     public class FunctionDefinition
     {

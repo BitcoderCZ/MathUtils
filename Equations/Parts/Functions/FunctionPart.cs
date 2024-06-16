@@ -1,11 +1,4 @@
-﻿using MathUtils.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MathUtils.Equations.Parts.Functions
+﻿namespace MathUtils.Equations.Parts.Functions
 {
     public sealed class FunctionPart : IPart
     {
