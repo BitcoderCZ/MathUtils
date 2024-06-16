@@ -36,8 +36,8 @@ namespace MathUtils.Equations.Parts.Functions
         public static FunctionDefinition Round => new FunctionDefinition("round", 1, (parts, content) => Math.Round(parts[0].GetValue(content)));
         public static FunctionDefinition Floor => new FunctionDefinition("floor", 1, (parts, content) => Math.Floor(parts[0].GetValue(content)));
 
-        public static FunctionDefinition Sin => new FunctionDefinition("sin", 1, (parts, content) => Math.Sin((double)Angle.Convert(parts[0].GetValue(content), content.AngleUnit, Radian)));
-        public static FunctionDefinition Cos => new FunctionDefinition("cos", 1, (parts, content) => Math.Cos((double)Angle.Convert(parts[0].GetValue(content), content.AngleUnit, Radian)));
-        public static FunctionDefinition Tan => new FunctionDefinition("tan", 1, (parts, content) => Math.Tan((double)Angle.Convert(parts[0].GetValue(content), content.AngleUnit, Radian)));
+        public static FunctionDefinition Sin => new FunctionDefinition("sin", 1, (parts, content) => Math.Sin(Angle.Convert(parts[0].GetValue(content), content.AngleUnit, Radian)));
+        public static FunctionDefinition Cos => new FunctionDefinition("cos", 1, (parts, content) => Math.Cos(Angle.Convert(parts[0].GetValue(content), content.AngleUnit, Radian)));
+        public static FunctionDefinition Tan => new FunctionDefinition("tan", 1, (parts, content) => Math.Tan(Angle.Convert(parts[0].GetValue(content), content.AngleUnit, Radian)));
     }
 }
