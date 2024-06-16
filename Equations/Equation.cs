@@ -170,9 +170,7 @@ namespace MathUtils.Equations
             processFunctions(tokens, context);
             processBlocks(tokens, context);
             addMultiplications(tokens);
-
-            // TODO: handle 5X as 5 * X and also maybe X Y as X * Y, tokenize option only 1 letter vars, so XY -> X * Y
-
+            
             for (int i = 0; i < tokens.Count; i++)
             {
                 Token current = tokens[i];
