@@ -1,5 +1,6 @@
 ﻿using MathUtils.Exceptions;
 using MathUtils.Measures;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace MathUtils.Equations

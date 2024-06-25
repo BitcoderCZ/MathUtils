@@ -1,4 +1,8 @@
-﻿namespace MathUtils.Equations.Parts.Functions
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace MathUtils.Equations.Parts.Functions
 {
     public sealed class FunctionPart : IPart
     {

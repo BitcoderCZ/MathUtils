@@ -1,4 +1,6 @@
-﻿namespace MathUtils.Exceptions
+﻿using System;
+
+namespace MathUtils.Exceptions
 {
     public class ParseException : Exception
     {

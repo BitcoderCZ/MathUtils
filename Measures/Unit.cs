@@ -21,7 +21,7 @@ namespace MathUtils.Measures
         public static bool operator ==(Unit a, Unit b)
             => a?.Equals(b) ?? b is null;
         public static bool operator !=(Unit a, Unit b)
-            => !a?.Equals(b) ?? b is not null;
+            => !a?.Equals(b) ?? !(b is null);
 
         public override int GetHashCode()
             => Name.GetHashCode() ^ Measure.GetHashCode();

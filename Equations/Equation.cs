@@ -2,6 +2,7 @@
 using MathUtils.Equations.Parts.Functions;
 using MathUtils.Equations.Parts.Operations;
 using MathUtils.Exceptions;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 
@@ -43,7 +44,7 @@ namespace MathUtils.Equations
         /// <exception cref="ParseException"></exception>
         public static IList<Token> Tokenize(string equation, NumberFormatInfo? numberFormat = null)
         {
-            List<Token> tokens = new();
+            List<Token> tokens = new List<Token>();
             StringBuilder builder = new StringBuilder();
 
             numberFormat ??= NumberFormatInfo.InvariantInfo;
@@ -112,7 +113,7 @@ namespace MathUtils.Equations
 
                     i--; // will be increased by the for loop
 
-                    if (!double.TryParse(builder.ToString(), numberFormat, out double numb))
+                    if (!double.TryParse(builder.ToString(), NumberStyles.Float, numberFormat, out double numb))
                         throw new ParseException(i, "Invalid number");
                     builder.Clear();
                     return numb;
@@ -155,8 +156,8 @@ namespace MathUtils.Equations
         /// <exception cref="ParseException"></exception>
         public static Equation Parse(IList<Token> tokens, ParseContext? context)
         {
-            Dictionary<int, ParseOperation> tokenToOp = new();
-            Dictionary<int, ParseOperation> operations = new();
+            Dictionary<int, ParseOperation> tokenToOp = new Dictionary<int, ParseOperation>();
+            Dictionary<int, ParseOperation> operations = new Dictionary<int, ParseOperation>();
 
             context ??= ParseContext.Default;
 
@@ -213,7 +214,7 @@ namespace MathUtils.Equations
                             break;
                     }
 
-                    List<int> usedTokens = new(2);
+                    List<int> usedTokens = new List<int>(2);
                     if (binary)
                         usedTokens.Add(i - 1);
 
@@ -319,8 +320,8 @@ namespace MathUtils.Equations
                 TokenType a = tokens[i].Type;
                 TokenType b = tokens[i + 1].Type;
 
-                if ((a is TokenType.Number or TokenType.Indentifier or TokenType.Function or TokenType.Block)
-                    && (b is TokenType.Number or TokenType.Indentifier or TokenType.Function or TokenType.Block))
+                if ((a == TokenType.Number || a == TokenType.Indentifier || a == TokenType.Function || a == TokenType.Block)
+                    && (b == TokenType.Number || b == TokenType.Indentifier || b == TokenType.Function || b == TokenType.Block))
                 {
                     tokens.Insert(i + 1, new Token(TokenType.Star));
                     i++;
@@ -346,8 +347,8 @@ namespace MathUtils.Equations
             {
                 string name = (string)tokens[start].Value!;
 
-                List<IPart> args = new();
-                List<Token> argTokens = new();
+                List<IPart> args = new List<IPart>();
+                List<Token> argTokens = new List<Token>();
                 int argStart = start + 2;
                 int depth = 1;
                 for (int i = start + 2; i < tokens.Count; i++)
@@ -411,7 +412,7 @@ namespace MathUtils.Equations
 
             void readBlock(int start)
             {
-                List<Token> blockTokens = new();
+                List<Token> blockTokens = new List<Token>();
 
                 int end;
                 int depth = 1;

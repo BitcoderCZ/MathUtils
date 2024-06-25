@@ -16,7 +16,7 @@ namespace MathUtils.Measures
         public static bool operator ==(Value a, Value b)
             => a?.Equals(b) ?? b is null;
         public static bool operator !=(Value a, Value b)
-            => !a?.Equals(b) ?? b is not null;
+            => !a?.Equals(b) ?? !(b is null);
 
         public override string ToString()
             => Val + " " + Unit.Symbol;

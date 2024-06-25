@@ -1,5 +1,7 @@
 ﻿using MathUtils.Equations.Parts.Functions;
 using MathUtils.Exceptions;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace MathUtils.Equations
 {

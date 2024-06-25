@@ -1,4 +1,6 @@
-﻿namespace MathUtils.Equations.Parts.Operations
+﻿using System;
+
+namespace MathUtils.Equations.Parts.Operations
 {
     public class PowerOp : BinaryOperation
     {

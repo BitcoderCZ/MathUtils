@@ -1,4 +1,6 @@
-﻿using static MathUtils.Measures.Measures;
+﻿using System;
+using System.Collections.Generic;
+using static MathUtils.Measures.Measures;
 using static MathUtils.Measures.Units.Angles;
 
 namespace MathUtils.Equations.Parts.Functions

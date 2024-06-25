@@ -1,4 +1,8 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace MathUtils.Measures
@@ -44,7 +48,7 @@ namespace MathUtils.Measures
         /// <returns></returns>
         public Value ChooseUnit(double value, Unit unit)
         {
-            List<int> decimalSepPlace = new();
+            List<int> decimalSepPlace = new List<int>();
 
             foreach (Unit u in Units)
             {
@@ -84,7 +88,7 @@ namespace MathUtils.Measures
         public static bool operator ==(Measure a, Measure b)
             => a?.Equals(b) ?? b is null;
         public static bool operator !=(Measure a, Measure b)
-            => !a?.Equals(b) ?? b is not null;
+            => !a?.Equals(b) ?? !(b is null);
 
         public override int GetHashCode()
             => Name.GetHashCode();

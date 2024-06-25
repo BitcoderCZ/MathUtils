@@ -1,4 +1,7 @@
-﻿namespace MathUtils.Equations.Parts.Functions
+﻿using System;
+using System.Collections.Generic;
+
+namespace MathUtils.Equations.Parts.Functions
 {
     public class FunctionDefinition
     {
