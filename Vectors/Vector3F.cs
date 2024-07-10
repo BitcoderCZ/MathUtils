@@ -152,6 +152,8 @@ namespace MathUtils.Vectors
             => new Vector3F(v.X, v.Y, v.Z);
         public static implicit operator Vector3F(Vector3S v)
             => new Vector3F(v.X, v.Y, v.Z);
+        public static implicit operator Vector3F(Vector3US v)
+            => new Vector3F(v.X, v.Y, v.Z);
 
         public override int GetHashCode()
             => HashCode.Combine(X, Y, Z);

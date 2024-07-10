@@ -11,8 +11,8 @@ namespace MathUtils.Vectors
     public struct Vector2I : IEnumerable<int>
     {
         // vec 1
-        public int X { get; set; }
-        public int Y { get; set; }
+        public int X;
+        public int Y;
 
         // vec 2
         public Vector2I XX => new Vector2I(X, X);
@@ -120,6 +120,8 @@ namespace MathUtils.Vectors
         public static explicit operator Vector2I(Vector2F v)
             => new Vector2I((int)v.X, (int)v.Y);
         public static implicit operator Vector2I(Vector2S v)
+            => new Vector2I(v.X, v.Y);
+        public static implicit operator Vector2I(Vector2US v)
             => new Vector2I(v.X, v.Y);
 
         public override int GetHashCode()

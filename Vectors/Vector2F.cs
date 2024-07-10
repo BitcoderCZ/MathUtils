@@ -121,6 +121,8 @@ namespace MathUtils.Vectors
             => new Vector2F(v.X, v.Y);
         public static implicit operator Vector2F(Vector2S v)
             => new Vector2F(v.X, v.Y);
+        public static implicit operator Vector2F(Vector2US v)
+            => new Vector2F(v.X, v.Y);
 
         public override int GetHashCode()
             => HashCode.Combine(X, Y);
