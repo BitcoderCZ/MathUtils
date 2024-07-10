@@ -85,6 +85,12 @@ namespace MathUtils.Vectors
         IEnumerator IEnumerable.GetEnumerator()
             => new ArrayEnumerator<int>(X, Y);
 
+        public static Vector2I Min(Vector2I a, Vector2I b)
+            => new Vector2I(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y));
+
+        public static Vector2I Max(Vector2I a, Vector2I b)
+            => new Vector2I(Math.Max(a.X, b.X), Math.Max(a.Y, b.Y));
+
         public static Vector2I operator +(Vector2I a, Vector2I b)
             => new Vector2I(a.X + b.X, a.Y + b.Y);
         public static Vector2I operator -(Vector2I a, Vector2I b)

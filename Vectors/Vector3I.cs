@@ -116,6 +116,12 @@ namespace MathUtils.Vectors
         IEnumerator IEnumerable.GetEnumerator()
             => new ArrayEnumerator<int>(X, Y, Z);
 
+        public static Vector3I Min(Vector3I a, Vector3I b)
+            => new Vector3I(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y), Math.Min(a.Z, b.Z));
+
+        public static Vector3I Max(Vector3I a, Vector3I b)
+            => new Vector3I(Math.Max(a.X, b.X), Math.Max(a.Y, b.Y), Math.Max(a.Z, b.Z));
+
         public static Vector3I operator +(Vector3I a, Vector3I b)
             => new Vector3I(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
         public static Vector3I operator -(Vector3I a, Vector3I b)
