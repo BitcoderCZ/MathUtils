@@ -74,7 +74,7 @@ namespace MathUtils.Vectors
         public static readonly Vector2S UnitY = new Vector2S(0, 1);
 
         public Vector2S(int _x, int _y)
-            : this((short)_x, (short) _y)
+            : this((short)_x, (short)_y)
         {
         }
         public Vector2S(short _x, short _y)
