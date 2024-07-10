@@ -8,27 +8,27 @@ using System.Text;
 
 namespace MathUtils.Vectors
 {
-    public struct Vector2I : IEnumerable<int>
+    public struct Vector2S : IEnumerable<short>
     {
         // vec 1
-        public int X { get; set; }
-        public int Y { get; set; }
+        public short X { get; set; }
+        public short Y { get; set; }
 
         // vec 2
-        public Vector2I XX => new Vector2I(X, X);
-        public Vector2I XY => new Vector2I(X, Y);
-        public Vector2I YX => new Vector2I(Y, X);
-        public Vector2I YY => new Vector2I(Y, Y);
+        public Vector2S XX => new Vector2S(X, X);
+        public Vector2S XY => new Vector2S(X, Y);
+        public Vector2S YX => new Vector2S(Y, X);
+        public Vector2S YY => new Vector2S(Y, Y);
 
         // vec 3
-        public Vector3I XXX => new Vector3I(X, X, X);
-        public Vector3I XXY => new Vector3I(X, X, Y);
-        public Vector3I XYX => new Vector3I(X, Y, X);
-        public Vector3I XYY => new Vector3I(X, Y, Y);
-        public Vector3I YXX => new Vector3I(Y, X, X);
-        public Vector3I YXY => new Vector3I(Y, X, Y);
-        public Vector3I YYX => new Vector3I(Y, Y, X);
-        public Vector3I YYY => new Vector3I(Y, Y, Y);
+        public Vector3S XXX => new Vector3S(X, X, X);
+        public Vector3S XXY => new Vector3S(X, X, Y);
+        public Vector3S XYX => new Vector3S(X, Y, X);
+        public Vector3S XYY => new Vector3S(X, Y, Y);
+        public Vector3S YXX => new Vector3S(Y, X, X);
+        public Vector3S YXY => new Vector3S(Y, X, Y);
+        public Vector3S YYX => new Vector3S(Y, Y, X);
+        public Vector3S YYY => new Vector3S(Y, Y, Y);
 
         /// <summary>
         /// 
@@ -36,7 +36,7 @@ namespace MathUtils.Vectors
         /// <param name="index"></param>
         /// <returns></returns>
         /// <exception cref="IndexOutOfRangeException"></exception>
-        public int this[int index]
+        public short this[int index]
         {
             get
             {
@@ -66,72 +66,76 @@ namespace MathUtils.Vectors
             }
         }
 
-        public static readonly Vector2I Zero = default;
+        public static readonly Vector2S Zero = default;
 
-        public static readonly Vector2I One = new Vector2I(1, 1);
+        public static readonly Vector2S One = new Vector2S(1, 1);
 
-        public static readonly Vector2I UnitX = new Vector2I(1, 0);
-        public static readonly Vector2I UnitY = new Vector2I(0, 1);
+        public static readonly Vector2S UnitX = new Vector2S(1, 0);
+        public static readonly Vector2S UnitY = new Vector2S(0, 1);
 
-        public Vector2I(int _x, int _y)
+        public Vector2S(int _x, int _y)
+            : this((short)_x, (short) _y)
+        {
+        }
+        public Vector2S(short _x, short _y)
         {
             X = _x;
             Y = _y;
         }
 
-        public IEnumerator<int> GetEnumerator()
-            => new ArrayEnumerator<int>(X, Y);
+        public IEnumerator<short> GetEnumerator()
+            => new ArrayEnumerator<short>(X, Y);
 
         IEnumerator IEnumerable.GetEnumerator()
-            => new ArrayEnumerator<int>(X, Y);
+            => new ArrayEnumerator<short>(X, Y);
 
-        public static Vector2I Min(Vector2I a, Vector2I b)
-            => new Vector2I(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y));
+        public static Vector2S Min(Vector2S a, Vector2S b)
+            => new Vector2S(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y));
 
-        public static Vector2I Max(Vector2I a, Vector2I b)
-            => new Vector2I(Math.Max(a.X, b.X), Math.Max(a.Y, b.Y));
+        public static Vector2S Max(Vector2S a, Vector2S b)
+            => new Vector2S(Math.Max(a.X, b.X), Math.Max(a.Y, b.Y));
 
-        public static Vector2I operator +(Vector2I a, Vector2I b)
-            => new Vector2I(a.X + b.X, a.Y + b.Y);
-        public static Vector2I operator -(Vector2I a, Vector2I b)
-            => new Vector2I(a.X - b.X, a.Y - b.Y);
-        public static Vector2I operator *(Vector2I a, Vector2I b)
-            => new Vector2I(a.X * b.X, a.Y * b.Y);
-        public static Vector2I operator /(Vector2I a, Vector2I b)
-            => new Vector2I(a.X / b.X, a.Y / b.Y);
-        public static Vector2I operator %(Vector2I a, Vector2I b)
-            => new Vector2I(a.X % b.X, a.Y % b.Y);
+        public static Vector2S operator +(Vector2S a, Vector2S b)
+            => new Vector2S(a.X + b.X, a.Y + b.Y);
+        public static Vector2S operator -(Vector2S a, Vector2S b)
+            => new Vector2S(a.X - b.X, a.Y - b.Y);
+        public static Vector2S operator *(Vector2S a, Vector2S b)
+            => new Vector2S(a.X * b.X, a.Y * b.Y);
+        public static Vector2S operator /(Vector2S a, Vector2S b)
+            => new Vector2S(a.X / b.X, a.Y / b.Y);
+        public static Vector2S operator %(Vector2S a, Vector2S b)
+            => new Vector2S(a.X % b.X, a.Y % b.Y);
 
-        public static Vector2I operator -(Vector2I a)
-            => new Vector2I(-a.X, -a.Y);
+        public static Vector2S operator -(Vector2S a)
+            => new Vector2S(-a.X, -a.Y);
 
-        public static Vector2I operator *(Vector2I a, int b)
-            => new Vector2I(a.X * b, a.Y * b);
-        public static Vector2I operator /(Vector2I a, int b)
-            => new Vector2I(a.X / b, a.Y / b);
-        public static Vector2I operator %(Vector2I a, int b)
-            => new Vector2I(a.X % b, a.Y % b);
+        public static Vector2S operator *(Vector2S a, short b)
+            => new Vector2S(a.X * b, a.Y * b);
+        public static Vector2S operator /(Vector2S a, short b)
+            => new Vector2S(a.X / b, a.Y / b);
+        public static Vector2S operator %(Vector2S a, short b)
+            => new Vector2S(a.X % b, a.Y % b);
 
-        public static bool operator ==(Vector2I a, Vector2I b)
+        public static bool operator ==(Vector2S a, Vector2S b)
             => a.Equals(b);
-        public static bool operator !=(Vector2I a, Vector2I b)
+        public static bool operator !=(Vector2S a, Vector2S b)
             => !a.Equals(b);
 
-        public static explicit operator Vector2I(Vector2F v)
-            => new Vector2I((int)v.X, (int)v.Y);
-        public static implicit operator Vector2I(Vector2S v)
-            => new Vector2I(v.X, v.Y);
+        public static explicit operator Vector2S(Vector2F v)
+            => new Vector2S((short)v.X, (short)v.Y);
+        public static explicit operator Vector2S(Vector2I v)
+            => new Vector2S((short)v.X, (short)v.Y);
 
         public override int GetHashCode()
             => HashCode.Combine(X, Y);
 
         public override bool Equals([NotNullWhen(true)] object? obj)
         {
-            if (obj is Vector2I other) return Equals(other);
+            if (obj is Vector2S other) return Equals(other);
             else return false;
         }
 
-        public bool Equals(Vector2I other)
+        public bool Equals(Vector2S other)
             => X == other.X && Y == other.Y;
 
         /// <summary>

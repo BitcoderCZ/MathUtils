@@ -16,15 +16,15 @@ namespace MathUtils.Vectors
         public int Z;
 
         // vec2
-        public Vector2F XX => new Vector2F(X, X);
-        public Vector2F XY => new Vector2F(X, Y);
-        public Vector2F XZ => new Vector2F(X, Z);
-        public Vector2F YX => new Vector2F(Y, X);
-        public Vector2F YY => new Vector2F(Y, Y);
-        public Vector2F YZ => new Vector2F(Y, Z);
-        public Vector2F ZX => new Vector2F(Z, X);
-        public Vector2F ZY => new Vector2F(Z, Y);
-        public Vector2F ZZ => new Vector2F(Z, Z);
+        public Vector2I XX => new Vector2I(X, X);
+        public Vector2I XY => new Vector2I(X, Y);
+        public Vector2I XZ => new Vector2I(X, Z);
+        public Vector2I YX => new Vector2I(Y, X);
+        public Vector2I YY => new Vector2I(Y, Y);
+        public Vector2I YZ => new Vector2I(Y, Z);
+        public Vector2I ZX => new Vector2I(Z, X);
+        public Vector2I ZY => new Vector2I(Z, Y);
+        public Vector2I ZZ => new Vector2I(Z, Z);
 
         // vec 3
         public Vector3I XXX => new Vector3I(X, X, X);
@@ -150,6 +150,8 @@ namespace MathUtils.Vectors
 
         public static explicit operator Vector3I(Vector3F v)
             => new Vector3I((int)v.X, (int)v.Y, (int)v.Z);
+        public static implicit operator Vector3I(Vector3S v)
+            => new Vector3I(v.X, v.Y, v.Z);
 
         public override int GetHashCode()
             => HashCode.Combine(X, Y, Z);
