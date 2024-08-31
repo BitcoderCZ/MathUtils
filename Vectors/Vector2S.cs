@@ -135,6 +135,8 @@ namespace MathUtils.Vectors
             => new Vector2S((short)v.X, (short)v.Y);
         public static explicit operator Vector2S(Vector2US v)
             => new Vector2S((short)v.X, (short)v.Y);
+        public static implicit operator Vector2S(Vector2B v)
+            => new Vector2S(v.X, v.Y);
 
         public override int GetHashCode()
             => HashCode.Combine(X, Y);

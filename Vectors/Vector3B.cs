@@ -169,6 +169,8 @@ namespace MathUtils.Vectors
             => new Vector3B((byte)v.X, (byte)v.Y, (byte)v.Z);
         public static explicit operator Vector3B(Vector3S v)
             => new Vector3B((byte)v.X, (byte)v.Y, (byte)v.Z);
+        public static explicit operator Vector3B(Vector3US v)
+            => new Vector3B((byte)v.X, (byte)v.Y, (byte)v.Z);
 
         public override int GetHashCode()
             => HashCode.Combine(X, Y, Z);
