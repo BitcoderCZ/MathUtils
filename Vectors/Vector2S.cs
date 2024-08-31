@@ -66,6 +66,9 @@ namespace MathUtils.Vectors
             }
         }
 
+        public double LengthSquared => X * X + Y * Y;
+        public double Length => Math.Sqrt(LengthSquared);
+
         public static readonly Vector2S Zero = default;
 
         public static readonly Vector2S One = new Vector2S(1, 1);
@@ -91,9 +94,14 @@ namespace MathUtils.Vectors
 
         public static Vector2S Min(Vector2S a, Vector2S b)
             => new Vector2S(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y));
-
         public static Vector2S Max(Vector2S a, Vector2S b)
             => new Vector2S(Math.Max(a.X, b.X), Math.Max(a.Y, b.Y));
+
+        public static double Distance(Vector2S a, Vector2S b)
+            => (a - b).Length;
+
+        public static int Dot(Vector2S a, Vector2S b)
+            => a.X * b.X + a.Y * b.Y;
 
         public static Vector2S operator +(Vector2S a, Vector2S b)
             => new Vector2S(a.X + b.X, a.Y + b.Y);
@@ -140,28 +148,12 @@ namespace MathUtils.Vectors
         public bool Equals(Vector2S other)
             => X == other.X && Y == other.Y;
 
-        /// <summary>
-        /// Returns a String representing this Vector2 instance.
-        /// </summary>
-        /// <returns>The string representation.</returns>
         public override string ToString()
             => ToString("G", CultureInfo.CurrentCulture);
 
-        /// <summary>
-        /// Returns a String representing this Vector2 instance, using the specified format to format individual elements.
-        /// </summary>
-        /// <param name="format">The format of individual elements.</param>
-        /// <returns>The string representation.</returns>
         public string ToString(string format)
             => ToString(format, CultureInfo.InvariantCulture);
 
-        /// <summary>
-        /// Returns a String representing this Vector2 instance, using the specified format to format individual elements 
-        /// and the given IFormatProvider.
-        /// </summary>
-        /// <param name="format">The format of individual elements.</param>
-        /// <param name="formatProvider">The format provider to use when formatting elements.</param>
-        /// <returns>The string representation.</returns>
         public string ToString(string format, IFormatProvider formatProvider)
         {
             StringBuilder sb = new StringBuilder();

@@ -96,6 +96,9 @@ namespace MathUtils.Vectors
             }
         }
 
+        public double LengthSquared => X * X + Y * Y + Z * Z;
+        public double Length => Math.Sqrt(LengthSquared);
+
         public static readonly Vector3US Zero = new Vector3US(0, 0, 0);
         public static readonly Vector3US One = new Vector3US(1, 1, 1);
 
@@ -122,9 +125,20 @@ namespace MathUtils.Vectors
 
         public static Vector3US Min(Vector3US a, Vector3US b)
             => new Vector3US(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y), Math.Min(a.Z, b.Z));
-
         public static Vector3US Max(Vector3US a, Vector3US b)
             => new Vector3US(Math.Max(a.X, b.X), Math.Max(a.Y, b.Y), Math.Max(a.Z, b.Z));
+
+        public static double Distance(Vector3US a, Vector3US b)
+            => (a - b).Length;
+
+        public static int Dot(Vector3US a, Vector3US b)
+            => a.X * b.X + a.Y * b.Y + a.Z;
+        public static Vector3US Cross(Vector3US a, Vector3US b)
+            => new Vector3US(
+                a.Y * b.Z - a.Z * b.Y,
+                a.Z * b.X - a.X * b.Z,
+                a.X * b.Y - a.Y * b.X
+            );
 
         public static Vector3US operator +(Vector3US a, Vector3US b)
             => new Vector3US(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
@@ -168,28 +182,12 @@ namespace MathUtils.Vectors
         public bool Equals(Vector3US other)
             => X == other.X && Y == other.Y && Z == other.Z;
 
-        /// <summary>
-        /// Returns a String representing this Vector2 instance.
-        /// </summary>
-        /// <returns>The string representation.</returns>
         public override string ToString()
             => ToString("G", CultureInfo.CurrentCulture);
 
-        /// <summary>
-        /// Returns a String representing this Vector2 instance, using the specified format to format individual elements.
-        /// </summary>
-        /// <param name="format">The format of individual elements.</param>
-        /// <returns>The string representation.</returns>
         public string ToString(string format)
             => ToString(format, CultureInfo.InvariantCulture);
 
-        /// <summary>
-        /// Returns a String representing this Vector2 instance, using the specified format to format individual elements 
-        /// and the given IFormatProvider.
-        /// </summary>
-        /// <param name="format">The format of individual elements.</param>
-        /// <param name="formatProvider">The format provider to use when formatting elements.</param>
-        /// <returns>The string representation.</returns>
         public string ToString(string format, IFormatProvider formatProvider)
         {
             StringBuilder sb = new StringBuilder();

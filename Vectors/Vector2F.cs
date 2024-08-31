@@ -66,6 +66,9 @@ namespace MathUtils.Vectors
             }
         }
 
+        public double LengthSquared => X * X + Y * Y;
+        public double Length => Math.Sqrt(LengthSquared);
+
         public static readonly Vector2F Zero = new Vector2F(0f, 0f);
 
         public static readonly Vector2F One = new Vector2F(1f, 1f);
@@ -79,6 +82,9 @@ namespace MathUtils.Vectors
             Y = _y;
         }
 
+        public Vector2F Normalized()
+            => this / (float)Length;
+
         public IEnumerator<float> GetEnumerator()
             => new ArrayEnumerator<float>(X, Y);
 
@@ -87,9 +93,14 @@ namespace MathUtils.Vectors
 
         public static Vector2F Min(Vector2F a, Vector2F b)
             => new Vector2F(MathF.Min(a.X, b.X), MathF.Min(a.Y, b.Y));
-
         public static Vector2F Max(Vector2F a, Vector2F b)
             => new Vector2F(MathF.Max(a.X, b.X), MathF.Max(a.Y, b.Y));
+
+        public static double Distance(Vector2F a, Vector2F b)
+            => (a - b).Length;
+
+        public static float Dot(Vector2F a, Vector2F b)
+            => a.X * b.X + a.Y * b.Y;
 
         public static Vector2F operator +(Vector2F a, Vector2F b)
             => new Vector2F(a.X + b.X, a.Y + b.Y);
@@ -136,28 +147,12 @@ namespace MathUtils.Vectors
         public bool Equals(Vector2I other)
             => X == other.X && Y == other.Y;
 
-        /// <summary>
-        /// Returns a String representing this Vector2 instance.
-        /// </summary>
-        /// <returns>The string representation.</returns>
         public override string ToString()
             => ToString("G", CultureInfo.CurrentCulture);
 
-        /// <summary>
-        /// Returns a String representing this Vector2 instance, using the specified format to format individual elements.
-        /// </summary>
-        /// <param name="format">The format of individual elements.</param>
-        /// <returns>The string representation.</returns>
         public string ToString(string format)
             => ToString(format, CultureInfo.InvariantCulture);
 
-        /// <summary>
-        /// Returns a String representing this Vector2 instance, using the specified format to format individual elements 
-        /// and the given IFormatProvider.
-        /// </summary>
-        /// <param name="format">The format of individual elements.</param>
-        /// <param name="formatProvider">The format provider to use when formatting elements.</param>
-        /// <returns>The string representation.</returns>
         public string ToString(string format, IFormatProvider formatProvider)
         {
             StringBuilder sb = new StringBuilder();

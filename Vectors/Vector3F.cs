@@ -96,6 +96,9 @@ namespace MathUtils.Vectors
             }
         }
 
+        public double LengthSquared => X * X + Y * Y + Z * Z;
+        public double Length => Math.Sqrt(LengthSquared);
+
         public static readonly Vector3F Zero = new Vector3F(0f, 0f, 0f);
         public static readonly Vector3F One = new Vector3F(1f, 1f, 1f);
 
@@ -110,6 +113,9 @@ namespace MathUtils.Vectors
             Z = _z;
         }
 
+        public Vector3F Normalized()
+            => this / (float)Length;
+
         public IEnumerator<float> GetEnumerator()
             => new ArrayEnumerator<float>(X, Y, Z);
 
@@ -118,9 +124,20 @@ namespace MathUtils.Vectors
 
         public static Vector3F Min(Vector3F a, Vector3F b)
             => new Vector3F(MathF.Min(a.X, b.X), MathF.Min(a.Y, b.Y), MathF.Min(a.Z, b.Z));
-
         public static Vector3F Max(Vector3F a, Vector3F b)
             => new Vector3F(MathF.Max(a.X, b.X), MathF.Max(a.Y, b.Y), MathF.Max(a.Z, b.Z));
+
+        public static double Distance(Vector3F a, Vector3F b)
+            => (a - b).Length;
+
+        public static float Dot(Vector3F a, Vector3F b)
+            => a.X * b.X + a.Y * b.Y + a.Z;
+        public static Vector3F Cross(Vector3F a, Vector3F b)
+            => new Vector3F(
+                a.Y * b.Z - a.Z * b.Y,
+                a.Z * b.X - a.X * b.Z,
+                a.X * b.Y - a.Y * b.X
+            );
 
         public static Vector3F operator +(Vector3F a, Vector3F b)
             => new Vector3F(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
@@ -168,14 +185,14 @@ namespace MathUtils.Vectors
             => X == other.X && Y == other.Y && Z == other.Z;
 
         /// <summary>
-        /// Returns a String representing this Vector2 instance.
+        /// Returns a String representing this Vector3 instance.
         /// </summary>
         /// <returns>The string representation.</returns>
         public override string ToString()
             => ToString("G", CultureInfo.CurrentCulture);
 
         /// <summary>
-        /// Returns a String representing this Vector2 instance, using the specified format to format individual elements.
+        /// Returns a String representing this Vector3 instance, using the specified format to format individual elements.
         /// </summary>
         /// <param name="format">The format of individual elements.</param>
         /// <returns>The string representation.</returns>
@@ -183,7 +200,7 @@ namespace MathUtils.Vectors
             => ToString(format, CultureInfo.InvariantCulture);
 
         /// <summary>
-        /// Returns a String representing this Vector2 instance, using the specified format to format individual elements 
+        /// Returns a String representing this Vector3 instance, using the specified format to format individual elements 
         /// and the given IFormatProvider.
         /// </summary>
         /// <param name="format">The format of individual elements.</param>
