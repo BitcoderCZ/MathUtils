@@ -187,7 +187,7 @@ namespace MathUtils.Vectors
         public bool Equals(Vector3S other)
             => X == other.X && Y == other.Y && Z == other.Z;
         public override string ToString()
-            => ToString("G", CultureInfo.CurrentCulture);
+            => ToString("G", CultureInfo.InvariantCulture);
 
         public string ToString(string format)
             => ToString(format, CultureInfo.InvariantCulture);

@@ -150,7 +150,7 @@ namespace MathUtils.Vectors
             => X == other.X && Y == other.Y;
 
         public override string ToString()
-            => ToString("G", CultureInfo.CurrentCulture);
+            => ToString("G", CultureInfo.InvariantCulture);
 
         public string ToString(string format)
             => ToString(format, CultureInfo.InvariantCulture);

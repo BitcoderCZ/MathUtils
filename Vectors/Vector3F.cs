@@ -191,7 +191,7 @@ namespace MathUtils.Vectors
         /// </summary>
         /// <returns>The string representation.</returns>
         public override string ToString()
-            => ToString("G", CultureInfo.CurrentCulture);
+            => ToString("G", CultureInfo.InvariantCulture);
 
         /// <summary>
         /// Returns a String representing this Vector3 instance, using the specified format to format individual elements.
