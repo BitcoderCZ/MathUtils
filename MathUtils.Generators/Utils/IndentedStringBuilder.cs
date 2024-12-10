@@ -73,7 +73,7 @@ internal ref struct IndentedStringBuilder : IDisposable
 			return;
 		}
 
-		int index = -1;
+		int index = 0;
 
 		while (true)
 		{
@@ -89,7 +89,7 @@ internal ref struct IndentedStringBuilder : IDisposable
 			}
 
 			OutputTabs();
-			_builder.Append(value.AsSpan(index, nextIndex - index + 1));
+			_builder.Append(value.AsSpan(index, nextIndex - index + 1).ToString());
 			_tabsPending = true;
 
 			index = nextIndex + 1;
@@ -99,6 +99,12 @@ internal ref struct IndentedStringBuilder : IDisposable
 				return;
 			}
 		}
+	}
+
+	public void AppendLine()
+	{
+		Append('\n');
+		_tabsPending = true;
 	}
 
 	public void AppendLine(string value)

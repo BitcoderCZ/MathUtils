@@ -45,7 +45,9 @@ internal ref struct ValueStringBuilder : IDisposable
 	public void EnsureCapacity(int capacity)
 	{
 		if (capacity > _chars.Length)
+		{
 			Grow(capacity - _pos);
+		}
 	}
 
 	/// <summary>
@@ -245,8 +247,7 @@ internal ref struct ValueStringBuilder : IDisposable
 
 	public void Append(ReadOnlySpan<char> value)
 	{
-		int pos = _pos;
-		if (pos > _chars.Length - value.Length)
+		if (_pos > _chars.Length - value.Length)
 		{
 			Grow(value.Length);
 		}

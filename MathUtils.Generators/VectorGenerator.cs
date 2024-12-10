@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using MathUtils.Generators.Utils;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using System;
@@ -51,9 +52,15 @@ public class VectorGenerator : IIncrementalGenerator
 	{
 		if (vectorToGenerate is { } value)
 		{
-			string result = GenerateVectorClass(value);
-
-			context.AddSource($"{value.Name}.g.cs", SourceText.From(result, Encoding.UTF8));
+			try
+			{
+				string result = GenerateVectorClass(value);
+				context.AddSource($"{value.Name}.g.cs", SourceText.From(result, Encoding.UTF8));
+			}
+			catch (Exception ex)
+			{
+				string s = ex.ToString();
+			}
 		}
 	}
 
@@ -63,7 +70,7 @@ public class VectorGenerator : IIncrementalGenerator
 		{
 			return null;
 		}
-
+		
 		foreach (var attrib in vectorSymbol.GetAttributes())
 		{
 			if (attrib.AttributeClass?.Name == "VectorAttribute")
@@ -95,7 +102,7 @@ public class VectorGenerator : IIncrementalGenerator
 	private static string GenerateVectorClass(VectorToGenerate vectorToGenerate)
 	{
 		// TODO: add xml documentation
-		var builder = new StringBuilder();
+		IndentedStringBuilder builder = new IndentedStringBuilder(new ValueStringBuilder(1024 * 4));
 
 		// ********** struct start **********
 		// ********** Zero **********
@@ -108,8 +115,10 @@ public class VectorGenerator : IIncrementalGenerator
 
 			""");
 
+		builder.Indent = 2;
+
 		// ********** One **********
-		builder.Append($"		public static readonly {vectorToGenerate.Name} One = new {vectorToGenerate.Name}(");
+		builder.Append($"public static readonly {vectorToGenerate.Name} One = new {vectorToGenerate.Name}(");
 
 		for (int i = 0; i < vectorToGenerate.NumbDimensions; i++)
 		{
@@ -127,7 +136,7 @@ public class VectorGenerator : IIncrementalGenerator
 		// ********** Unit{x} **********
 		for (int i = 0; i < vectorToGenerate.NumbDimensions; i++)
 		{
-			builder.Append($"		public static readonly {vectorToGenerate.Name} Unit{AxisNames[i]} = new {vectorToGenerate.Name}(");
+			builder.Append($"public static readonly {vectorToGenerate.Name} Unit{AxisNames[i]} = new {vectorToGenerate.Name}(");
 
 			for (int j = 0; j < vectorToGenerate.NumbDimensions; j++)
 			{
@@ -145,28 +154,30 @@ public class VectorGenerator : IIncrementalGenerator
 
 		for (int i = 0; i < vectorToGenerate.NumbDimensions; i++)
 		{
-			builder.AppendLine($"		public {vectorToGenerate.ElementType} {AxisNames[i]};");
+			builder.AppendLine($"public {vectorToGenerate.ElementType} {AxisNames[i]};");
 			builder.AppendLine();
 		}
 
 		// ********** 1 element ctor **********
 		builder.AppendLine($$"""
-					public {{vectorToGenerate.Name}}({{vectorToGenerate.ElementType}} value)
-					{
+			public {{vectorToGenerate.Name}}({{vectorToGenerate.ElementType}} value)
+			{
 			""");
 
+		builder.Indent++;
 		for (int i = 0; i < vectorToGenerate.NumbDimensions; i++)
 		{
-			builder.AppendLine($"			{AxisNames[i]} = value;");
+			builder.AppendLine($"{AxisNames[i]} = value;");
 		}
+
+		builder.Indent--;
 
 		// ********** x element ctor **********
 		builder.Append($$"""
-					}
+			}
 
-					public {{vectorToGenerate.Name}}(
+			public {{vectorToGenerate.Name}}(
 			""");
-
 
 		for (int i = 0; i < vectorToGenerate.NumbDimensions; i++)
 		{
@@ -180,23 +191,26 @@ public class VectorGenerator : IIncrementalGenerator
 
 		builder.AppendLine("""
 			)
-					{
+			{
 			""");
 
+		builder.Indent++;
 		for (int i = 0; i < vectorToGenerate.NumbDimensions; i++)
 		{
-			builder.AppendLine($"			{AxisNames[i]} = {AxisParamNames[i]};");
+			builder.AppendLine($"{AxisNames[i]} = {AxisParamNames[i]};");
 		}
 
+		builder.Indent--;
+
 		builder.AppendLine("""
-					}
+			}
 
 			""");
 
 		// TODO {x}{y} combinations
 
 		// ********** length **********
-		builder.Append("		public double LengthSquared => ");
+		builder.Append("public double LengthSquared => ");
 		for (int i = 0; i < vectorToGenerate.NumbDimensions; i++)
 		{
 			if (i != 0)
@@ -209,82 +223,94 @@ public class VectorGenerator : IIncrementalGenerator
 
 		builder.AppendLine("""
 			;
-					
-					public double Length => Math.Sqrt(LengthSquared);
+			
+			public double Length => Math.Sqrt(LengthSquared);
 
 			""");
 
 		// ********** indexer **********
 		builder.AppendLine($$"""
-					/// <exception cref="IndexOutOfRangeException"></exception>
-					public {{vectorToGenerate.ElementType}} this[int index]
+			/// <exception cref="IndexOutOfRangeException"></exception>
+			public {{vectorToGenerate.ElementType}} this[int index]
+			{
+				get
+				{
+					switch (index)
 					{
-						get
-						{
-							switch (index)
-							{
 			""");
+
+		builder.Indent += 3;
+		for (int i = 0; i < vectorToGenerate.NumbDimensions; i++)
+		{
+			builder.AppendLine($"""
+				case {i}:
+					return {AxisNames[i]};
+				""");
+		}
+
+		builder.Indent -= 2;
+
+		builder.AppendLine("""
+					default:
+						throw new IndexOutOfRangeException();
+				}
+			}
+			set
+			{
+				switch (index)
+				{
+			""");
+
+		builder.Indent += 2;
 
 		for (int i = 0; i < vectorToGenerate.NumbDimensions; i++)
 		{
 			builder.AppendLine($"""
-									case {i}:
-										return {AxisNames[i]};
+				case {i}:
+					{AxisNames[i]} = value;
+					break;
 				""");
 		}
 
-		builder.AppendLine("""
-								default:
-									throw new IndexOutOfRangeException();
-							}
-						}
-						set
-						{
-							switch (index)
-							{
-			""");
-
-		for (int i = 0; i < vectorToGenerate.NumbDimensions; i++)
-		{
-			builder.AppendLine($"""
-									case {i}:
-										{AxisNames[i]} = value;
-										break;
-				""");
-		}
+		builder.Indent -= 3;
 
 		builder.AppendLine("""
-								default:
-									throw new IndexOutOfRangeException();
-							}
-						}
+						default:
+							throw new IndexOutOfRangeException();
 					}
+				}
+			}
 
 			""");
 
 		// ********** operators **********
-		AppendBinaryOperator("+");
-		AppendBinaryElementOperator("+");
-		AppendBinaryOperator("-");
-		AppendBinaryElementOperator("-");
-		AppendBinaryOperator("*");
-		AppendBinaryElementOperator("*");
-		AppendBinaryOperator("/");
-		AppendBinaryElementOperator("/");
-		AppendBinaryOperator("%");
-		AppendBinaryElementOperator("5");
+		AppendBinaryOperator(builder, "+");
+		AppendBinaryElementOperator(builder, "+");
+		AppendBinaryOperator(builder, "-");
+		AppendBinaryElementOperator(builder, "-");
+		AppendBinaryOperator(builder, "*");
+		AppendBinaryElementOperator(builder, "*");
+		AppendBinaryOperator(builder, "/");
+		AppendBinaryElementOperator(builder, "/");
+		AppendBinaryOperator(builder, "%");
+		AppendBinaryElementOperator(builder, "5");
 
-		AppendUnaryOperator("+");
-		AppendUnaryOperator("-");
+		AppendUnaryOperator(builder, "+");
+		AppendUnaryOperator(builder, "-");
 
 		// ********** equals operators **********
-		AppendCombinedBinaryOperator("==", "&&", "bool");
-		AppendCombinedBinaryOperator("!=", "||", "bool");
+		AppendCombinedBinaryOperator(builder, "==", "&&", "bool");
+		AppendCombinedBinaryOperator(builder, "!=", "||", "bool");
 
 		// ********** GetEnumerator **********
 		builder.Append($"""
-					public IEnumerator<int> GetEnumerator()
-						=> new ArrayEnumerator<int>(
+			public IEnumerator<int> GetEnumerator()
+				=> new ArrayEnumerator<int>
+			""");
+		AppendCall(builder);
+		builder.AppendLine("""
+			;
+
 			""");
 		/*
 		 public IEnumerator<int> GetEnumerator()
@@ -300,13 +326,13 @@ public class VectorGenerator : IIncrementalGenerator
 			}
 			""");
 
-		return builder.ToString();
+		return builder.ToString(); // also disposes
 
-		void AppendUnaryOperator(string opSymbol)
+		void AppendUnaryOperator(IndentedStringBuilder builder, string opSymbol)
 		{
 			builder.Append($"""
-						public static {vectorToGenerate.Name} operator {opSymbol}({vectorToGenerate.Name} value)
-							=> new {vectorToGenerate.Name}(
+				public static {vectorToGenerate.Name} operator {opSymbol}({vectorToGenerate.Name} value)
+					=> new {vectorToGenerate.Name}(
 				""");
 
 			for (int i = 0; i < vectorToGenerate.NumbDimensions; i++)
@@ -325,11 +351,11 @@ public class VectorGenerator : IIncrementalGenerator
 				""");
 		}
 
-		void AppendBinaryOperator(string opSymbol)
+		void AppendBinaryOperator(IndentedStringBuilder builder, string opSymbol)
 		{
 			builder.Append($"""
-						public static {vectorToGenerate.Name} operator {opSymbol}({vectorToGenerate.Name} a, {vectorToGenerate.Name} b)
-							=> new {vectorToGenerate.Name}(
+				public static {vectorToGenerate.Name} operator {opSymbol}({vectorToGenerate.Name} a, {vectorToGenerate.Name} b)
+					=> new {vectorToGenerate.Name}(
 				""");
 
 			for (int i = 0; i < vectorToGenerate.NumbDimensions; i++)
@@ -348,11 +374,11 @@ public class VectorGenerator : IIncrementalGenerator
 				""");
 		}
 
-		void AppendBinaryElementOperator(string opSymbol)
+		void AppendBinaryElementOperator(IndentedStringBuilder builder, string opSymbol)
 		{
 			builder.Append($"""
-						public static {vectorToGenerate.Name} operator {opSymbol}({vectorToGenerate.Name} a, {vectorToGenerate.ElementType} b)
-							=> new {vectorToGenerate.Name}(
+				public static {vectorToGenerate.Name} operator {opSymbol}({vectorToGenerate.Name} a, {vectorToGenerate.ElementType} b)
+					=> new {vectorToGenerate.Name}(
 				""");
 
 			for (int i = 0; i < vectorToGenerate.NumbDimensions; i++)
@@ -371,11 +397,11 @@ public class VectorGenerator : IIncrementalGenerator
 				""");
 		}
 
-		void AppendCombinedBinaryOperator(string opSymbol, string combinationSymbol, string resultType)
+		void AppendCombinedBinaryOperator(IndentedStringBuilder builder, string opSymbol, string combinationSymbol, string resultType)
 		{
 			builder.Append($"""
-						public static {resultType} operator {opSymbol}({vectorToGenerate.Name} a, {vectorToGenerate.Name} b)
-							=> 
+				public static {resultType} operator {opSymbol}({vectorToGenerate.Name} a, {vectorToGenerate.Name} b)
+					=> 
 				""");
 
 			for (int i = 0; i < vectorToGenerate.NumbDimensions; i++)
@@ -395,7 +421,7 @@ public class VectorGenerator : IIncrementalGenerator
 		}
 
 		// (X, Y)
-		void AppendCall()
+		void AppendCall(IndentedStringBuilder builder)
 		{
 			builder.Append('(');
 
@@ -413,7 +439,7 @@ public class VectorGenerator : IIncrementalGenerator
 		}
 
 		// (a.X, b.X)
-		void AppendABCall(int axisIndex)
+		void AppendABCall(IndentedStringBuilder builder, int axisIndex)
 		{
 			builder.Append($"(a.{AxisNames[axisIndex]}, b.{AxisNames[axisIndex]})");
 		}
