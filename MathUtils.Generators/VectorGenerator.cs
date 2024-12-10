@@ -18,6 +18,7 @@ public class VectorGenerator : IIncrementalGenerator
 	private static readonly ImmutableArray<string> AxisParamNames = ["x", "y", "z", "w"];
 
 	private static readonly ImmutableArray<string> VectorTypes = ["byte", "sbyte", "short", "ushort", "int", "uint", "float", "double"];
+	private static readonly ImmutableArray<string> GroupTypes = ["byte", "sbyte", "short", "ushort", "int", "uint"];
 
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
@@ -40,7 +41,7 @@ public class VectorGenerator : IIncrementalGenerator
 	{
 		// TODO: add xml documentation
 		IndentedStringBuilder builder = new IndentedStringBuilder(new ValueStringBuilder(1024 * 4));
-		
+
 		// ********** struct start **********
 		// ********** Zero **********
 		builder.AppendLine($$"""
@@ -268,6 +269,42 @@ public class VectorGenerator : IIncrementalGenerator
 		// ********** equals operators **********
 		AppendCombinedBinaryOperator(ref builder, "==", "&&", "bool");
 		AppendCombinedBinaryOperator(ref builder, "!=", "||", "bool");
+
+		// ********** conversions **********
+		int indexOfElementType = VectorTypes.IndexOf(vectorToGenerate.ElementType);
+		bool isGroupType = GroupTypes.Contains(vectorToGenerate.ElementType);
+
+		for (int i = 0; i < VectorTypes.Length; i++)
+		{
+			if (i == indexOfElementType)
+			{
+				continue;
+			}
+
+			bool isExplicit = i > indexOfElementType || (isGroupType && (indexOfElementType % 2 == 0 ? (i == indexOfElementType + 1) : (i == indexOfElementType - 1)));
+
+			string otherType = VectorTypes[i];
+
+			builder.Append($"""
+				public static {(isExplicit ? "explicit" : "implicit")} operator {vectorToGenerate.Name}({otherType}{vectorToGenerate.NumbDimensions} v)
+					=> new {vectorToGenerate.Name}(
+				""");
+
+			for (int j = 0; j < vectorToGenerate.NumbDimensions; j++)
+			{
+				if (j != 0)
+				{
+					builder.Append(", ");
+				}
+
+				builder.Append($"({vectorToGenerate.ElementType})v.{AxisNames[j]}");
+			}
+
+			builder.AppendLine("""
+				);
+
+				""");
+		}
 
 		// ********** GetEnumerator **********
 		builder.Append($"""
