@@ -282,6 +282,10 @@ public class VectorGenerator : IIncrementalGenerator
 		AppendCombinedBinaryOperator("!=", "||", "bool");
 
 		// ********** GetEnumerator **********
+		builder.Append($"""
+					public IEnumerator<int> GetEnumerator()
+						=> new ArrayEnumerator<int>(
+			""");
 		/*
 		 public IEnumerator<int> GetEnumerator()
 			=> new ArrayEnumerator<int>(X, Y);
@@ -393,13 +397,25 @@ public class VectorGenerator : IIncrementalGenerator
 		// (X, Y)
 		void AppendCall()
 		{
+			builder.Append('(');
 
+			for (int i = 0; i < vectorToGenerate.NumbDimensions; i++)
+			{
+				if (i != 0)
+				{
+					builder.Append(", ");
+				}
+
+				builder.Append(AxisNames[i]);
+			}
+
+			builder.Append(')');
 		}
 
 		// (a.X, b.X)
 		void AppendABCall(int axisIndex)
 		{
-
+			builder.Append($"(a.{AxisNames[axisIndex]}, b.{AxisNames[axisIndex]})");
 		}
 	}
 }
