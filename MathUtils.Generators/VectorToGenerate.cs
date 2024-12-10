@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MathUtils.Generators;
+﻿namespace MathUtils.Generators;
 
 internal readonly record struct VectorToGenerate
 {
