@@ -1,32 +1,19 @@
-﻿using MathUtils.Utils;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using MathUtils.Generators;
+using MathUtils.Utils;
 
 namespace MathUtils.Vectors;
 
 [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Same name case as int.")]
 [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Same name case as int.")]
 [Vector(2, "int")]
-public partial struct int2 : IEnumerable<int>
+public partial struct int2
 {
-	public static readonly int2 Zero = default;
-
-	public static readonly int2 One = new int2(1, 1);
-
-	public static readonly int2 UnitX = new int2(1, 0);
-	public static readonly int2 UnitY = new int2(0, 1);
-
-	public int2(int _x, int _y)
-	{
-		X = _x;
-		Y = _y;
-	}
-
 	// vec 2
 	public int2 XX => new int2(X, X);
 	public int2 XY => new int2(X, Y);
@@ -43,41 +30,6 @@ public partial struct int2 : IEnumerable<int>
 	public int3 YYX => new int3(Y, Y, X);
 	public int3 YYY => new int3(Y, Y, Y);
 
-	public double LengthSquared => X * X + Y * Y;
-
-	public double Length => Math.Sqrt(LengthSquared);
-
-	/// <exception cref="IndexOutOfRangeException"></exception>
-	public int this[int index]
-	{
-		get
-		{
-			switch (index)
-			{
-				case 0:
-					return X;
-				case 1:
-					return Y;
-				default:
-					throw new IndexOutOfRangeException();
-			}
-		}
-		set
-		{
-			switch (index)
-			{
-				case 0:
-					X = value;
-					break;
-				case 1:
-					Y = value;
-					break;
-				default:
-					throw new IndexOutOfRangeException();
-			}
-		}
-	}
-
 	public static explicit operator int2(float2 v)
 		=> new int2((int)v.X, (int)v.Y);
 
@@ -89,39 +41,6 @@ public partial struct int2 : IEnumerable<int>
 
 	public static implicit operator int2(byte2 v)
 		=> new int2(v.X, v.Y);
-
-	public static int2 operator +(int2 a, int2 b)
-		=> new int2(a.X + b.X, a.Y + b.Y);
-
-	public static int2 operator -(int2 a, int2 b)
-		=> new int2(a.X - b.X, a.Y - b.Y);
-
-	public static int2 operator *(int2 a, int2 b)
-		=> new int2(a.X * b.X, a.Y * b.Y);
-
-	public static int2 operator /(int2 a, int2 b)
-		=> new int2(a.X / b.X, a.Y / b.Y);
-
-	public static int2 operator %(int2 a, int2 b)
-		=> new int2(a.X % b.X, a.Y % b.Y);
-
-	public static int2 operator -(int2 a)
-		=> new int2(-a.X, -a.Y);
-
-	public static int2 operator *(int2 a, int b)
-		=> new int2(a.X * b, a.Y * b);
-
-	public static int2 operator /(int2 a, int b)
-		=> new int2(a.X / b, a.Y / b);
-
-	public static int2 operator %(int2 a, int b)
-		=> new int2(a.X % b, a.Y % b);
-
-	public static bool operator ==(int2 a, int2 b)
-		=> a.X == b.X && a.Y == b.Y;
-
-	public static bool operator !=(int2 a, int2 b)
-		=> a.X != b.X || a.Y != b.Y;
 
 	public IEnumerator<int> GetEnumerator()
 		=> new ArrayEnumerator<int>(X, Y);
@@ -148,6 +67,10 @@ public partial struct int2 : IEnumerable<int>
 	/// <inheritdoc/>
 	public override bool Equals([NotNullWhen(true)] object? obj)
 		=> obj is int2 other && this == other;
+
+	/// <inheritdoc/>
+	public bool Equals(int2 other)
+		=> this == other;
 
 	/// <inheritdoc/>
 	public override string ToString()
