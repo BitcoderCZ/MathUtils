@@ -1,0 +1,8 @@
+{
+	"profiles": {
+		"MathUtilsGen": {
+			"commandName": "MathUtils.Generators",
+			"targetProject": "..\\MathUtils\\MathUtils.csproj"
+		}
+	}
+}
