@@ -63,7 +63,7 @@ internal ref struct IndentedStringBuilder : IDisposable
 
 	public void Append(string value)
 	{
-		Debug.Assert(!value.Contains("\r\n"));
+		value = value.Replace("\r\n", "\n");
 
 		OutputTabs();
 

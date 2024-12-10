@@ -10,7 +10,10 @@ public static class Maths
 
 	public static float Round(float value, int decimalPlaces = 0)
 	{
-		if (decimalPlaces == 0) return MathF.Round(value);
+		if (decimalPlaces == 0)
+		{
+			return MathF.Round(value);
+		}
 		else
 		{
 			float multiplier = MathF.Pow(10f, decimalPlaces);
@@ -20,7 +23,10 @@ public static class Maths
 
 	public static double Round(double value, int decimalPlaces = 0)
 	{
-		if (decimalPlaces == 0) return Math.Round(value);
+		if (decimalPlaces == 0)
+		{
+			return Math.Round(value);
+		}
 		else
 		{
 			double multiplier = Math.Pow(10.0, decimalPlaces);
