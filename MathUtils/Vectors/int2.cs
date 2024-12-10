@@ -42,12 +42,6 @@ public partial struct int2
 	public static implicit operator int2(byte2 v)
 		=> new int2(v.X, v.Y);
 
-	public IEnumerator<int> GetEnumerator()
-		=> new ArrayEnumerator<int>(X, Y);
-
-	IEnumerator IEnumerable.GetEnumerator()
-		=> new ArrayEnumerator<int>(X, Y);
-
 	public static int2 Min(int2 a, int2 b)
 		=> new int2(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y));
 

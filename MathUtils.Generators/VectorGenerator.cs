@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace MathUtils.Generators;
@@ -284,30 +285,30 @@ public class VectorGenerator : IIncrementalGenerator
 			""");
 
 		// ********** operators **********
-		AppendBinaryOperator(builder, "+");
-		AppendBinaryElementOperator(builder, "+");
-		AppendBinaryOperator(builder, "-");
-		AppendBinaryElementOperator(builder, "-");
-		AppendBinaryOperator(builder, "*");
-		AppendBinaryElementOperator(builder, "*");
-		AppendBinaryOperator(builder, "/");
-		AppendBinaryElementOperator(builder, "/");
-		AppendBinaryOperator(builder, "%");
-		AppendBinaryElementOperator(builder, "5");
+		AppendBinaryOperator(ref builder, "+");
+		AppendBinaryElementOperator(ref builder, "+");
+		AppendBinaryOperator(ref builder, "-");
+		AppendBinaryElementOperator(ref builder, "-");
+		AppendBinaryOperator(ref builder, "*");
+		AppendBinaryElementOperator(ref builder, "*");
+		AppendBinaryOperator(ref builder, "/");
+		AppendBinaryElementOperator(ref builder, "/");
+		AppendBinaryOperator(ref builder, "%");
+		AppendBinaryElementOperator(ref builder, "%");
 
-		AppendUnaryOperator(builder, "+");
-		AppendUnaryOperator(builder, "-");
+		AppendUnaryOperator(ref builder, "+");
+		AppendUnaryOperator(ref builder, "-");
 
 		// ********** equals operators **********
-		AppendCombinedBinaryOperator(builder, "==", "&&", "bool");
-		AppendCombinedBinaryOperator(builder, "!=", "||", "bool");
+		AppendCombinedBinaryOperator(ref builder, "==", "&&", "bool");
+		AppendCombinedBinaryOperator(ref builder, "!=", "||", "bool");
 
 		// ********** GetEnumerator **********
 		builder.Append($"""
 			public IEnumerator<int> GetEnumerator()
 				=> new ArrayEnumerator<int>
 			""");
-		AppendCall(builder);
+		AppendCall(ref builder);
 		builder.AppendLine("""
 			;
 
@@ -317,9 +318,73 @@ public class VectorGenerator : IIncrementalGenerator
 			IEnumerator IEnumerator.GetEnumerator()
 				=> new ArrayEnumerator<int>
 			""");
-		AppendCall(builder);
+		AppendCall(ref builder);
 		builder.AppendLine("""
 			;
+
+			""");
+
+		// ********** min/max **********
+		builder.Append($"""
+			public static {vectorToGenerate.Name} Min({vectorToGenerate.Name} a, {vectorToGenerate.Name} b)
+				=> new {vectorToGenerate.Name}(
+			""");
+
+		for (int i = 0; i < vectorToGenerate.NumbDimensions; i++)
+		{
+			if (i != 0)
+			{
+				builder.Append(", ");
+			}
+
+			builder.Append("System.Math.Min");
+			AppendABCall(ref builder, i);
+		}
+
+		builder.Append($"""
+			);
+
+			public static {vectorToGenerate.Name} Max({vectorToGenerate.Name} a, {vectorToGenerate.Name} b)
+				=> new {vectorToGenerate.Name}(
+			""");
+
+		for (int i = 0; i < vectorToGenerate.NumbDimensions; i++)
+		{
+			if (i != 0)
+			{
+				builder.Append(", ");
+			}
+
+			builder.Append("System.Math.Max");
+			AppendABCall(ref builder, i);
+		}
+
+		builder.AppendLine("""
+			);
+
+			""");
+
+		// ********** Distance/Dot **********
+		builder.Append($"""
+			public static double Distance({vectorToGenerate.Name} a, {vectorToGenerate.Name} b)
+				=> (a - b).Length;
+			
+			public static {vectorToGenerate.ElementType} Dot({vectorToGenerate.Name} a, {vectorToGenerate.Name} b)
+				=> 
+			""");
+
+		for (int i = 0; i < vectorToGenerate.NumbDimensions; i++)
+		{
+			if (i != 0)
+			{
+				builder.Append(" + ");
+			}
+
+			builder.Append($"(a.{AxisNames[i]} * b.{AxisNames[i]})");
+		}
+
+		builder.AppendLine("""
+			);
 
 			""");
 
@@ -332,7 +397,7 @@ public class VectorGenerator : IIncrementalGenerator
 
 		return builder.ToString(); // also disposes
 
-		void AppendUnaryOperator(IndentedStringBuilder builder, string opSymbol)
+		void AppendUnaryOperator(ref IndentedStringBuilder builder, string opSymbol)
 		{
 			builder.Append($"""
 				public static {vectorToGenerate.Name} operator {opSymbol}({vectorToGenerate.Name} value)
@@ -355,7 +420,7 @@ public class VectorGenerator : IIncrementalGenerator
 				""");
 		}
 
-		void AppendBinaryOperator(IndentedStringBuilder builder, string opSymbol)
+		void AppendBinaryOperator(ref IndentedStringBuilder builder, string opSymbol)
 		{
 			builder.Append($"""
 				public static {vectorToGenerate.Name} operator {opSymbol}({vectorToGenerate.Name} a, {vectorToGenerate.Name} b)
@@ -378,7 +443,7 @@ public class VectorGenerator : IIncrementalGenerator
 				""");
 		}
 
-		void AppendBinaryElementOperator(IndentedStringBuilder builder, string opSymbol)
+		void AppendBinaryElementOperator(ref IndentedStringBuilder builder, string opSymbol)
 		{
 			builder.Append($"""
 				public static {vectorToGenerate.Name} operator {opSymbol}({vectorToGenerate.Name} a, {vectorToGenerate.ElementType} b)
@@ -401,7 +466,7 @@ public class VectorGenerator : IIncrementalGenerator
 				""");
 		}
 
-		void AppendCombinedBinaryOperator(IndentedStringBuilder builder, string opSymbol, string combinationSymbol, string resultType)
+		void AppendCombinedBinaryOperator(ref IndentedStringBuilder builder, string opSymbol, string combinationSymbol, string resultType)
 		{
 			builder.Append($"""
 				public static {resultType} operator {opSymbol}({vectorToGenerate.Name} a, {vectorToGenerate.Name} b)
@@ -425,7 +490,8 @@ public class VectorGenerator : IIncrementalGenerator
 		}
 
 		// (X, Y)
-		void AppendCall(IndentedStringBuilder builder)
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		void AppendCall(ref IndentedStringBuilder builder)
 		{
 			builder.Append('(');
 
@@ -443,7 +509,8 @@ public class VectorGenerator : IIncrementalGenerator
 		}
 
 		// (a.X, b.X)
-		void AppendABCall(IndentedStringBuilder builder, int axisIndex)
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		void AppendABCall(ref IndentedStringBuilder builder, int axisIndex)
 		{
 			builder.Append($"(a.{AxisNames[axisIndex]}, b.{AxisNames[axisIndex]})");
 		}
