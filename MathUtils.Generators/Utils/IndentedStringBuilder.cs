@@ -9,12 +9,12 @@ namespace MathUtils.Generators.Utils;
 
 internal ref struct IndentedStringBuilder : IDisposable
 {
-	private readonly ValueStringBuilder _builder;
+	private ValueStringBuilder _builder;
 	private readonly string _tabString;
 	private int _indentLevel;
 	private bool _tabsPending;
 
-	public const string DefaultTabString = "    ";
+	public const string DefaultTabString = "	";
 
 	public IndentedStringBuilder(ValueStringBuilder builder)
 		: this(builder, DefaultTabString)
@@ -89,7 +89,7 @@ internal ref struct IndentedStringBuilder : IDisposable
 			}
 
 			OutputTabs();
-			_builder.Append(value.AsSpan(index, nextIndex - index + 1).ToString());
+			_builder.Append(value.AsSpan(index, nextIndex - index + 1));
 			_tabsPending = true;
 
 			index = nextIndex + 1;

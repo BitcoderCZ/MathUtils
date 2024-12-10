@@ -70,7 +70,7 @@ public class VectorGenerator : IIncrementalGenerator
 		{
 			return null;
 		}
-		
+
 		foreach (var attrib in vectorSymbol.GetAttributes())
 		{
 			if (attrib.AttributeClass?.Name == "VectorAttribute")
@@ -312,15 +312,19 @@ public class VectorGenerator : IIncrementalGenerator
 			;
 
 			""");
-		/*
-		 public IEnumerator<int> GetEnumerator()
-			=> new ArrayEnumerator<int>(X, Y);
 
-		IEnumerator IEnumerable.GetEnumerator()
-			=> new ArrayEnumerator<int>(X, Y);
-		 */
+		builder.Append($"""
+			IEnumerator IEnumerator.GetEnumerator()
+				=> new ArrayEnumerator<int>
+			""");
+		AppendCall(builder);
+		builder.AppendLine("""
+			;
+
+			""");
 
 		// ********** struct end **********
+		builder.Indent -= 2;
 		builder.AppendLine("""
 				}
 			}

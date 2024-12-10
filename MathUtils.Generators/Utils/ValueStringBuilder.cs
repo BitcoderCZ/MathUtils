@@ -7,9 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 
 namespace MathUtils.Generators.Utils;
-
-// from: https://github.com/Ilia-Kosenkov/Backports/blob/master/Backports/System/Text/ValueStringBuilder.cs
-internal ref struct ValueStringBuilder : IDisposable
+internal ref struct ValueStringBuilder
 {
 	private char[]? _arrayToReturnToPool;
 	private Span<char> _chars;
@@ -45,9 +43,7 @@ internal ref struct ValueStringBuilder : IDisposable
 	public void EnsureCapacity(int capacity)
 	{
 		if (capacity > _chars.Length)
-		{
 			Grow(capacity - _pos);
-		}
 	}
 
 	/// <summary>
@@ -66,10 +62,7 @@ internal ref struct ValueStringBuilder : IDisposable
 	public ref char GetPinnableReference(bool terminate)
 	{
 		if (!terminate)
-		{
 			return ref MemoryMarshal.GetReference(_chars);
-		}
-
 		EnsureCapacity(Length + 1);
 		_chars[Length] = '\0';
 		return ref MemoryMarshal.GetReference(_chars);
@@ -101,23 +94,15 @@ internal ref struct ValueStringBuilder : IDisposable
 	public ReadOnlySpan<char> AsSpan(bool terminate)
 	{
 		if (!terminate)
-		{
 			return _chars.Slice(0, _pos);
-		}
-
 		EnsureCapacity(Length + 1);
 		_chars[Length] = '\0';
 		return _chars.Slice(0, _pos);
 	}
 
-	public readonly ReadOnlySpan<char> AsSpan()
-		=> _chars.Slice(0, _pos);
-
-	public readonly ReadOnlySpan<char> AsSpan(int start)
-		=> _chars.Slice(start, _pos - start);
-
-	public readonly ReadOnlySpan<char> AsSpan(int start, int length)
-		=> _chars.Slice(start, length);
+	public readonly ReadOnlySpan<char> AsSpan() => _chars.Slice(0, _pos);
+	public readonly ReadOnlySpan<char> AsSpan(int start) => _chars.Slice(start, _pos - start);
+	public readonly ReadOnlySpan<char> AsSpan(int start, int length) => _chars.Slice(start, length);
 
 	public bool TryCopyTo(Span<char> destination, out int charsWritten)
 	{
@@ -136,9 +121,7 @@ internal ref struct ValueStringBuilder : IDisposable
 	public void Insert(int index, char value, int count)
 	{
 		if (_pos > _chars.Length - count)
-		{
 			Grow(count);
-		}
 
 		int remaining = _pos - index;
 		_chars.Slice(index, remaining).CopyTo(_chars.Slice(index + count));
@@ -146,65 +129,56 @@ internal ref struct ValueStringBuilder : IDisposable
 		_pos += count;
 	}
 
-	public void Insert(int index, string? value)
+	public void Insert(int index, string? s)
 	{
-		if (string.IsNullOrEmpty(value))
-		{
+		if (s is null)
 			return;
-		}
 
-		int count = value!.Length;
+		int count = s.Length;
 
 		if (_pos > _chars.Length - count)
 			Grow(count);
 
 		int remaining = _pos - index;
 		_chars.Slice(index, remaining).CopyTo(_chars.Slice(index + count));
-		value.AsSpan().CopyTo(_chars.Slice(index));
+		s.AsSpan().CopyTo(_chars.Slice(index));
 		_pos += count;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public void Append(char value)
+	public void Append(char c)
 	{
 		int pos = _pos;
-
 		if ((uint)pos < (uint)_chars.Length)
 		{
-			_chars[pos] = value;
+			_chars[pos] = c;
 			_pos = pos + 1;
 		}
 		else
-		{
-			GrowAndAppend(value);
-		}
+			GrowAndAppend(c);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public void Append(string? value)
+	public void Append(string? s)
 	{
-		if (string.IsNullOrEmpty(value))
+		if (s is null)
 			return;
 
 		int pos = _pos;
-		if (value!.Length == 1 && (uint)pos < (uint)_chars.Length) // very common case, e.g. appending strings from NumberFormatInfo like separators, percent symbols, etc.
+		if (s.Length == 1 && (uint)pos < (uint)_chars.Length) // very common case, e.g. appending strings from NumberFormatInfo like separators, percent symbols, etc.
 		{
-			_chars[pos] = value[0];
+			_chars[pos] = s[0];
 			_pos = pos + 1;
 		}
 		else
-		{
-			AppendSlow(value);
-		}
+			AppendSlow(s);
 	}
 
 	private void AppendSlow(string s)
 	{
 		int pos = _pos;
 		if (pos > _chars.Length - s.Length)
-		{
 			Grow(s.Length);
-		}
 
 		s.AsSpan().CopyTo(_chars.Slice(pos));
 		_pos += s.Length;
@@ -213,44 +187,35 @@ internal ref struct ValueStringBuilder : IDisposable
 	public void Append(char c, int count)
 	{
 		if (_pos > _chars.Length - count)
-		{
 			Grow(count);
-		}
 
-		Span<char> dst = _chars.Slice(_pos, count);
+		var dst = _chars.Slice(_pos, count);
 		for (int i = 0; i < dst.Length; i++)
-		{
 			dst[i] = c;
-		}
-
 		_pos += count;
 	}
 
-	public void Append(in char value, int length)
+	/*public void Append(in char value, int length)
 	{
 		int pos = _pos;
 		if (pos > _chars.Length - length)
-		{
 			Grow(length);
-		}
 
-		Span<char> dst = _chars.Slice(_pos, length);
+		var dst = _chars.Slice(_pos, length);
 		for (int i = 0; i < dst.Length; i++)
 		{
 			dst[i] = value;
-
-			value = ref Unsafe.Add(ref Unsafe.AsRef(in value), 1);
+			//value = ref Ref.Increment(ref value);
+			value = ref Ref.Inc(in value);
 		}
-
 		_pos += length;
-	}
+	}*/
 
 	public void Append(ReadOnlySpan<char> value)
 	{
-		if (_pos > _chars.Length - value.Length)
-		{
+		int pos = _pos;
+		if (pos > _chars.Length - value.Length)
 			Grow(value.Length);
-		}
 
 		value.CopyTo(_chars.Slice(_pos));
 		_pos += value.Length;
@@ -261,9 +226,7 @@ internal ref struct ValueStringBuilder : IDisposable
 	{
 		int origPos = _pos;
 		if (origPos > _chars.Length - length)
-		{
 			Grow(length);
-		}
 
 		_pos = origPos + length;
 		return _chars.Slice(origPos, length);
