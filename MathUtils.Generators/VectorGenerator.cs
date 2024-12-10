@@ -14,90 +14,26 @@ namespace MathUtils.Generators;
 [Generator]
 public class VectorGenerator : IIncrementalGenerator
 {
-	private const string VectorAttribute = """
-		namespace MathUtils.Generators
-		{
-			[System.AttributeUsage(AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
-			public sealed class VectorAttribute : System.Attribute
-			{
-				public VectorAttribute(int numbDimensions, string elementType)
-				{
-					NumbDimensions = numbDimensions;
-					ElementType = elementType;
-				}
-
-				public int NumbDimensions { get; }
-				public string ElementType { get; }
-			}
-		}
-		""";
-
 	private static readonly ImmutableArray<string> AxisNames = ["X", "Y", "Z", "W"];
 	private static readonly ImmutableArray<string> AxisParamNames = ["x", "y", "z", "w"];
 
+	private static readonly ImmutableArray<string> VectorTypes = ["byte", "sbyte", "short", "ushort", "int", "uint", "float", "double"];
+
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
-		context.RegisterPostInitializationOutput(ctx => ctx.AddSource("VectorAttribute.g.cs", SourceText.From(VectorAttribute, Encoding.UTF8)));
-
-		IncrementalValuesProvider<VectorToGenerate?> vectorsToGenerate = context.SyntaxProvider
-			.ForAttributeWithMetadataName(
-				"MathUtils.Generators.VectorAttribute",
-				predicate: static (s, _) => true,
-				transform: static (ctx, _) => GetVectorToGenerate(ctx.SemanticModel, ctx.TargetNode))
-			.Where(static m => m is not null);
-
-		context.RegisterSourceOutput(vectorsToGenerate, static (spc, source) => Execute(source, spc));
-	}
-
-	private static void Execute(VectorToGenerate? vectorToGenerate, SourceProductionContext context)
-	{
-		if (vectorToGenerate is { } value)
+		context.RegisterPostInitializationOutput(ctx =>
 		{
-			try
+			for (int i = 2; i <= 3; i++)
 			{
-				string result = GenerateVectorClass(value);
-				context.AddSource($"{value.Name}.g.cs", SourceText.From(result, Encoding.UTF8));
-			}
-			catch (Exception ex)
-			{
-				string s = ex.ToString();
-			}
-		}
-	}
-
-	private static VectorToGenerate? GetVectorToGenerate(SemanticModel semanticModel, SyntaxNode vectorDeclarationSyntax)
-	{
-		if (semanticModel.GetDeclaredSymbol(vectorDeclarationSyntax) is not INamedTypeSymbol vectorSymbol)
-		{
-			return null;
-		}
-
-		foreach (var attrib in vectorSymbol.GetAttributes())
-		{
-			if (attrib.AttributeClass?.Name == "VectorAttribute")
-			{
-				int numbDimensions = (int)attrib.ConstructorArguments[0].Value!;
-				string elementType = (string)attrib.ConstructorArguments[1].Value!;
-
-				if (numbDimensions < 1 || numbDimensions > 4)
+				foreach (string elementType in VectorTypes)
 				{
-					throw new IndexOutOfRangeException("numbDimensions must be between 1 and 4.");
-				}
-				else if (string.IsNullOrEmpty(elementType))
-				{
-					throw new Exception("elementType cannot be null or empty.");
-				}
+					VectorToGenerate value = new VectorToGenerate(elementType + i, i, elementType);
 
-				return new VectorToGenerate(
-					vectorSymbol.Name,
-					numbDimensions,
-					elementType
-				);
+					string result = GenerateVectorClass(value);
+					ctx.AddSource($"{value.Name}.g.cs", SourceText.From(result, Encoding.UTF8));
+				}
 			}
-		}
-
-		Debug.Fail("The vector must have the VectorAttribute");
-		return null;
+		});
 	}
 
 	private static string GenerateVectorClass(VectorToGenerate vectorToGenerate)
