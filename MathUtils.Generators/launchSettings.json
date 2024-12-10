@@ -1,7 +1,7 @@
 {
 	"profiles": {
 		"MathUtilsGen": {
-			"commandName": "DebugRoslynComponent",
+			"commandName": "MathUtils.Generators",
 			"targetProject": "..\\MathUtils\\MathUtils.csproj"
 		}
 	}
