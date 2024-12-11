@@ -369,18 +369,57 @@ public class VectorGenerator : IIncrementalGenerator
 
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 				public {{returnType}} ToIndex({{vectorToGenerate.ElementType}} width)
-					=> X + Y * width;
+					=> X + (Y * width);
 				
 				/// <exception cref="IndexOutOfRangeException"></exception>
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 				public {{returnType}} ToIndexChecked({{vectorToGenerate.ElementType}} width, {{vectorToGenerate.ElementType}} height)
 					=> InBounds(width, height)
-						? X + Y * width
+						? X + (Y * width)
 						: throw new IndexOutOfRangeException();
 				
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 				public bool InBounds({{vectorToGenerate.ElementType}} width, {{vectorToGenerate.ElementType}} height)
 					=> X >= 0 && X < width && Y >= 0 && Y < height;
+				
+				""");
+		}
+
+		// ********** 3D index functions **********
+		if (vectorToGenerate.NumbDimensions == 3 && !vectorToGenerate.IsFloatingPoint)
+		{
+			string returnType = (!isLesserThanInt && !vectorToGenerate.IsSigned) ? vectorToGenerate.ElementType : vectorToGenerate.Is64Bit ? "long" : "int";
+
+			// optimize using Math.DivRem(), not for ulong, https://stackoverflow.com/a/11317776
+			builder.AppendLine($$"""
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				public static {{vectorToGenerate.Name}} FromIndex({{vectorToGenerate.ElementType}} index, {{vectorToGenerate.ElementType}} width, {{vectorToGenerate.ElementType}} height)
+					=> new {{vectorToGenerate.Name}}(index % width, (index / width) % height, index / (width * height));
+				
+				/// <exception cref="ArgumentOutOfRangeException"></exception>
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				public static {{vectorToGenerate.Name}} FromIndexChecked({{vectorToGenerate.ElementType}} index, {{vectorToGenerate.ElementType}} width, {{vectorToGenerate.ElementType}} height, {{vectorToGenerate.ElementType}} depth)
+				{
+					{{vectorToGenerate.Name}} value = new {{vectorToGenerate.Name}}(index % width, (index / width) % height, index / (width * height));
+					return value.InBounds(width, height, depth)
+						? value
+						: throw new ArgumentOutOfRangeException("index");
+				}
+
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				public {{returnType}} ToIndex({{vectorToGenerate.ElementType}} width, {{vectorToGenerate.ElementType}} height)
+					=> X + (Y * width) + (Z * width * height);
+				
+				/// <exception cref="IndexOutOfRangeException"></exception>
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				public {{returnType}} ToIndexChecked({{vectorToGenerate.ElementType}} width, {{vectorToGenerate.ElementType}} height, {{vectorToGenerate.ElementType}} depth)
+					=> InBounds(width, height, depth)
+						? X + (Y * width) + (Z * width * height)
+						: throw new IndexOutOfRangeException();
+				
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				public bool InBounds({{vectorToGenerate.ElementType}} width, {{vectorToGenerate.ElementType}} height, {{vectorToGenerate.ElementType}} depth)
+					=> X >= 0 && X < width && Y >= 0 && Y < height && Z >= 0 && Z < depth;
 				
 				""");
 		}
