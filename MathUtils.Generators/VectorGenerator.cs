@@ -14,8 +14,8 @@ public class VectorGenerator : IIncrementalGenerator
 	private static readonly ImmutableArray<string> AxisNames = ["X", "Y", "Z", "W"];
 	private static readonly ImmutableArray<string> AxisParamNames = ["x", "y", "z", "w"];
 
-	private static readonly ImmutableArray<string> VectorTypes = ["byte", "sbyte", "short", "ushort", "int", "uint", "float", "double"];
-	private static readonly ImmutableArray<string> GroupTypes = ["byte", "sbyte", "short", "ushort", "int", "uint"];
+	private static readonly ImmutableArray<string> VectorTypes = ["byte", "sbyte", "short", "ushort", "int", "uint", "long", "ulong", "float", "double"];
+	private static readonly ImmutableArray<string> GroupTypes = ["byte", "sbyte", "short", "ushort", "int", "uint", "long", "ulong"];
 
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0022:Use expression body for method", Justification = "No")]
 	public void Initialize(IncrementalGeneratorInitializationContext context)
@@ -42,8 +42,7 @@ public class VectorGenerator : IIncrementalGenerator
 
 		int indexOfElementType = VectorTypes.IndexOf(vectorToGenerate.ElementType);
 		bool isGroupType = GroupTypes.Contains(vectorToGenerate.ElementType);
-		bool lesserThanInt = indexOfElementType < VectorTypes.IndexOf("int");
-		bool isSigned = vectorToGenerate.ElementType[0] != 'u' && vectorToGenerate.ElementType != "byte";
+		bool isLesserThanInt = indexOfElementType < VectorTypes.IndexOf("int");
 
 		// ********** struct start **********
 		// ********** Zero **********
@@ -52,6 +51,7 @@ public class VectorGenerator : IIncrementalGenerator
 			using System.Collections;
 			using System.Collections.Generic;
 			using System.Globalization;
+			using System.Runtime.CompilerServices;
 			using System.Text;
 			using MathUtils.Utils;
 
@@ -158,7 +158,7 @@ public class VectorGenerator : IIncrementalGenerator
 			""");
 
 		// ********** x int element ctor **********
-		if (lesserThanInt)
+		if (isLesserThanInt)
 		{
 			builder.Append($$"""
 			public {{vectorToGenerate.Name}}(
@@ -219,7 +219,7 @@ public class VectorGenerator : IIncrementalGenerator
 		builder.AppendLine();
 
 		// ********** length **********
-		builder.Append($"public {(lesserThanInt ? "int" : vectorToGenerate.ElementType)} LengthSquared => ");
+		builder.Append($"public {(isLesserThanInt ? "int" : vectorToGenerate.ElementType)} LengthSquared => ");
 		for (int i = 0; i < vectorToGenerate.NumbDimensions; i++)
 		{
 			if (i != 0)
@@ -305,7 +305,7 @@ public class VectorGenerator : IIncrementalGenerator
 		AppendBinaryElementOperator(ref builder, "%");
 
 		AppendUnaryOperator(ref builder, "+");
-		if (isSigned)
+		if (vectorToGenerate.IsSigned)
 		{
 			AppendUnaryOperator(ref builder, "-");
 		}
@@ -344,6 +344,44 @@ public class VectorGenerator : IIncrementalGenerator
 			builder.AppendLine("""
 				);
 
+				""");
+		}
+
+		// ********** 2D index functions **********
+		if (vectorToGenerate.NumbDimensions == 2 && !vectorToGenerate.IsFloatingPoint)
+		{
+			string returnType = (!isLesserThanInt && !vectorToGenerate.IsSigned) ? vectorToGenerate.ElementType : vectorToGenerate.Is64Bit ? "long" : "int";
+			
+			builder.AppendLine($$"""
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				public static {{vectorToGenerate.Name}} FromIndex({{vectorToGenerate.ElementType}} index, {{vectorToGenerate.ElementType}} width)
+					=> new {{vectorToGenerate.Name}}(index % width, index / width);
+				
+				/// <exception cref="ArgumentOutOfRangeException"></exception>
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				public static {{vectorToGenerate.Name}} FromIndexChecked({{vectorToGenerate.ElementType}} index, {{vectorToGenerate.ElementType}} width, {{vectorToGenerate.ElementType}} height)
+				{
+					{{vectorToGenerate.Name}} value = new {{vectorToGenerate.Name}}(index % width, index / width);
+					return value.InBounds(width, height)
+						? value
+						: throw new ArgumentOutOfRangeException("index");
+				}
+
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				public {{returnType}} ToIndex({{vectorToGenerate.ElementType}} width)
+					=> X + Y * width;
+				
+				/// <exception cref="IndexOutOfRangeException"></exception>
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				public {{returnType}} ToIndexChecked({{vectorToGenerate.ElementType}} width, {{vectorToGenerate.ElementType}} height)
+					=> InBounds(width, height)
+						? X + Y * width
+						: throw new IndexOutOfRangeException();
+				
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				public bool InBounds({{vectorToGenerate.ElementType}} width, {{vectorToGenerate.ElementType}} height)
+					=> X >= 0 && X < width && Y >= 0 && Y < height;
+				
 				""");
 		}
 
@@ -413,7 +451,7 @@ public class VectorGenerator : IIncrementalGenerator
 			public static double Distance({vectorToGenerate.Name} a, {vectorToGenerate.Name} b)
 				=> (a - b).Length;
 			
-			public static {(lesserThanInt ? "int" : vectorToGenerate.ElementType)} Dot({vectorToGenerate.Name} a, {vectorToGenerate.Name} b)
+			public static {(isLesserThanInt ? "int" : vectorToGenerate.ElementType)} Dot({vectorToGenerate.Name} a, {vectorToGenerate.Name} b)
 				=> 
 			""");
 
