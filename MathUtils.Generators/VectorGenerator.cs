@@ -1,6 +1,7 @@
 ﻿using MathUtils.Generators.Utils;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
+using System;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -16,6 +17,7 @@ public class VectorGenerator : IIncrementalGenerator
 	private static readonly ImmutableArray<string> VectorTypes = ["byte", "sbyte", "short", "ushort", "int", "uint", "float", "double"];
 	private static readonly ImmutableArray<string> GroupTypes = ["byte", "sbyte", "short", "ushort", "int", "uint"];
 
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0022:Use expression body for method", Justification = "No")]
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
 		context.RegisterPostInitializationOutput(ctx =>
@@ -38,6 +40,11 @@ public class VectorGenerator : IIncrementalGenerator
 		// TODO: add xml documentation
 		IndentedStringBuilder builder = new IndentedStringBuilder(new ValueStringBuilder(1024 * 4));
 
+		int indexOfElementType = VectorTypes.IndexOf(vectorToGenerate.ElementType);
+		bool isGroupType = GroupTypes.Contains(vectorToGenerate.ElementType);
+		bool lesserThanInt = indexOfElementType < VectorTypes.IndexOf("int");
+		bool isSigned = vectorToGenerate.ElementType[0] != 'u' && vectorToGenerate.ElementType != "byte";
+
 		// ********** struct start **********
 		// ********** Zero **********
 		builder.AppendLine($$"""
@@ -48,9 +55,10 @@ public class VectorGenerator : IIncrementalGenerator
 			using System.Text;
 			using MathUtils.Utils;
 
+			#nullable enable
 			namespace MathUtils.Vectors
 			{
-				public partial struct {{vectorToGenerate.Name}} : IEnumerable<int>, IEquatable<int2>
+				public struct {{vectorToGenerate.Name}} : IEnumerable<{{vectorToGenerate.ElementType}}>, IEquatable<{{vectorToGenerate.Name}}>
 				{
 					public static readonly {{vectorToGenerate.Name}} Zero = default;
 
@@ -71,7 +79,7 @@ public class VectorGenerator : IIncrementalGenerator
 			builder.Append('1');
 		}
 
-		builder.AppendLine(")");
+		builder.AppendLine(");");
 		builder.AppendLine();
 
 		// ********** Unit{x} **********
@@ -89,10 +97,11 @@ public class VectorGenerator : IIncrementalGenerator
 				builder.Append(j == i ? '1' : '0');
 			}
 
-			builder.AppendLine(")");
+			builder.AppendLine(");");
 			builder.AppendLine();
 		}
 
+		// ********** X, Y, ... **********
 		for (int i = 0; i < vectorToGenerate.NumbDimensions; i++)
 		{
 			builder.AppendLine($"public {vectorToGenerate.ElementType} {AxisNames[i]};");
@@ -148,12 +157,48 @@ public class VectorGenerator : IIncrementalGenerator
 
 			""");
 
+		// ********** x int element ctor **********
+		if (lesserThanInt)
+		{
+			builder.Append($$"""
+			public {{vectorToGenerate.Name}}(
+			""");
+
+			for (int i = 0; i < vectorToGenerate.NumbDimensions; i++)
+			{
+				if (i != 0)
+				{
+					builder.Append(", ");
+				}
+
+				builder.Append($"int {AxisParamNames[i]}");
+			}
+
+			builder.AppendLine("""
+			)
+			{
+			""");
+
+			builder.Indent++;
+			for (int i = 0; i < vectorToGenerate.NumbDimensions; i++)
+			{
+				builder.AppendLine($"{AxisNames[i]} = ({vectorToGenerate.ElementType}){AxisParamNames[i]};");
+			}
+
+			builder.Indent--;
+
+			builder.AppendLine("""
+			}
+
+			""");
+		}
+
 		// ********** vec2 combinations **********
 		for (int i = 0; i < vectorToGenerate.NumbDimensions; i++)
 		{
 			for (int j = 0; j < vectorToGenerate.NumbDimensions; j++)
 			{
-				builder.AppendLine($"public {vectorToGenerate.Name} {AxisNames[i]}{AxisNames[j]} = new {vectorToGenerate.Name}({AxisNames[i]}, {AxisNames[j]});");
+				builder.AppendLine($"public {vectorToGenerate.ElementType}2 {AxisNames[i]}{AxisNames[j]} => new {vectorToGenerate.ElementType}2({AxisNames[i]}, {AxisNames[j]});");
 			}
 		}
 
@@ -166,7 +211,7 @@ public class VectorGenerator : IIncrementalGenerator
 			{
 				for (int k = 0; k < vectorToGenerate.NumbDimensions; k++)
 				{
-					builder.AppendLine($"public {vectorToGenerate.Name} {AxisNames[i]}{AxisNames[j]}{AxisNames[k]} = new {vectorToGenerate.Name}({AxisNames[i]}, {AxisNames[j]}, {AxisNames[k]});");
+					builder.AppendLine($"public {vectorToGenerate.ElementType}3 {AxisNames[i]}{AxisNames[j]}{AxisNames[k]} => new {vectorToGenerate.ElementType}3({AxisNames[i]}, {AxisNames[j]}, {AxisNames[k]});");
 				}
 			}
 		}
@@ -174,7 +219,7 @@ public class VectorGenerator : IIncrementalGenerator
 		builder.AppendLine();
 
 		// ********** length **********
-		builder.Append($"public {vectorToGenerate.ElementType} LengthSquared => ");
+		builder.Append($"public {(lesserThanInt ? "int" : vectorToGenerate.ElementType)} LengthSquared => ");
 		for (int i = 0; i < vectorToGenerate.NumbDimensions; i++)
 		{
 			if (i != 0)
@@ -260,16 +305,16 @@ public class VectorGenerator : IIncrementalGenerator
 		AppendBinaryElementOperator(ref builder, "%");
 
 		AppendUnaryOperator(ref builder, "+");
-		AppendUnaryOperator(ref builder, "-");
+		if (isSigned)
+		{
+			AppendUnaryOperator(ref builder, "-");
+		}
 
 		// ********** equals operators **********
 		AppendCombinedBinaryOperator(ref builder, "==", "&&", "bool");
 		AppendCombinedBinaryOperator(ref builder, "!=", "||", "bool");
 
 		// ********** conversions **********
-		int indexOfElementType = VectorTypes.IndexOf(vectorToGenerate.ElementType);
-		bool isGroupType = GroupTypes.Contains(vectorToGenerate.ElementType);
-
 		for (int i = 0; i < VectorTypes.Length; i++)
 		{
 			if (i == indexOfElementType)
@@ -304,8 +349,8 @@ public class VectorGenerator : IIncrementalGenerator
 
 		// ********** GetEnumerator **********
 		builder.Append($"""
-			public IEnumerator<int> GetEnumerator()
-				=> new ArrayEnumerator<int>
+			public IEnumerator<{vectorToGenerate.ElementType}> GetEnumerator()
+				=> new ArrayEnumerator<{vectorToGenerate.ElementType}>
 			""");
 		AppendCallWithValues(ref builder);
 		builder.AppendLine("""
@@ -314,8 +359,8 @@ public class VectorGenerator : IIncrementalGenerator
 			""");
 
 		builder.Append($"""
-			IEnumerator IEnumerator.GetEnumerator()
-				=> new ArrayEnumerator<int>
+			IEnumerator IEnumerable.GetEnumerator()
+				=> new ArrayEnumerator<{vectorToGenerate.ElementType}>
 			""");
 		AppendCallWithValues(ref builder);
 		builder.AppendLine("""
@@ -368,7 +413,7 @@ public class VectorGenerator : IIncrementalGenerator
 			public static double Distance({vectorToGenerate.Name} a, {vectorToGenerate.Name} b)
 				=> (a - b).Length;
 			
-			public static {vectorToGenerate.ElementType} Dot({vectorToGenerate.Name} a, {vectorToGenerate.Name} b)
+			public static {(lesserThanInt ? "int" : vectorToGenerate.ElementType)} Dot({vectorToGenerate.Name} a, {vectorToGenerate.Name} b)
 				=> 
 			""");
 
@@ -383,7 +428,7 @@ public class VectorGenerator : IIncrementalGenerator
 		}
 
 		builder.AppendLine("""
-			);
+			;
 
 			""");
 
@@ -418,17 +463,17 @@ public class VectorGenerator : IIncrementalGenerator
 			""");
 		AppendCallWithValues(ref builder);
 		builder.AppendLine("""
-			);
+			;
 
 			""");
 
 		// ********** Equals **********
 		builder.AppendLine($"""
-			public override bool Equals([NotNullWhen(true)] object? obj)
+			public override bool Equals(object? obj)
 				=> obj is {vectorToGenerate.Name} other && this == other;
 			
-			public bool Equals(int2 other)
-				=> this == {vectorToGenerate.Name};
+			public bool Equals({vectorToGenerate.Name} other)
+				=> this == other;
 			
 			""");
 
@@ -474,6 +519,7 @@ public class VectorGenerator : IIncrementalGenerator
 		builder.AppendLine("""
 				}
 			}
+			#nullable restore
 			""");
 
 		return builder.ToString(); // also disposes
@@ -492,7 +538,7 @@ public class VectorGenerator : IIncrementalGenerator
 					builder.Append(", ");
 				}
 
-				builder.Append($"{opSymbol}a.{AxisNames[i]}");
+				builder.Append($"{opSymbol}value.{AxisNames[i]}");
 			}
 
 			builder.AppendLine("""

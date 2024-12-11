@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace MathUtils.Utils;
 
-public struct ArrayEnumerator<T> : IEnumerator<T>
+public struct ArrayEnumerator<T> : IEnumerator<T>, IEnumerator
 {
 	private readonly T[] array;
 	private int index;
