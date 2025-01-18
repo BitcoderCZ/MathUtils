@@ -1,14 +1,15 @@
 ﻿using System.Collections.Immutable;
+using System.Diagnostics;
 
 namespace MathUtils.Generators;
 
 internal readonly struct VectorToGenerate
 {
-	private static readonly ImmutableArray<string> VectorAxisNames = ["X", "Y", "Z", "W"];
-	private static readonly ImmutableArray<string> VectorAxisParamNames = ["x", "y", "z", "w"];
+	public static readonly ImmutableArray<string> VectorAxisNames = ["X", "Y", "Z", "W"];
+	public static readonly ImmutableArray<string> VectorAxisParamNames = ["x", "y", "z", "w"];
 
-	private static readonly ImmutableArray<string> SizeAxisNames = ["Width", "Height"];
-	private static readonly ImmutableArray<string> SizeAxisParamNames = ["width", "Height"];
+	public static readonly ImmutableArray<string> SizeAxisNames = ["Width", "Height"];
+	public static readonly ImmutableArray<string> SizeAxisParamNames = ["width", "height"];
 
 	public readonly int NumbDimensions;
 	public readonly string ElementType;
@@ -26,6 +27,8 @@ internal readonly struct VectorToGenerate
 
 	public VectorToGenerate(string name, string elementType, int numbDimensions, VectorType type)
 	{
+		Debug.Assert(numbDimensions >= 1);
+
 		Name = name;
 		NumbDimensions = numbDimensions;
 		ElementType = elementType;
@@ -42,6 +45,9 @@ internal readonly struct VectorToGenerate
 			VectorType.Vector => VectorAxisParamNames,
 			VectorType.Size => SizeAxisParamNames,
 		};
+
+		Debug.Assert(NumbDimensions <= AxisNames.Length);
+		Debug.Assert(AxisNames.Length == AxisParamNames.Length);
 
 		IsFloatingPoint = ElementType is "float" or "double" or "Half";
 		IsSigned = ElementType[0] != 'u' && ElementType != "byte";

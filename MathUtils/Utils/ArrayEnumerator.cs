@@ -5,31 +5,29 @@ namespace MathUtils.Utils;
 
 public struct ArrayEnumerator<T> : IEnumerator<T>, IEnumerator
 {
-	private readonly T[] array;
-	private int index;
+	private readonly T[] _array;
+	private int _index;
 
-	public ArrayEnumerator(params T[] _array)
+	public ArrayEnumerator(params T[] array)
 	{
-		array = _array;
-		index = -1;
+		_array = array;
+		_index = -1;
 	}
 
-	public T Current => array[index];
+	public readonly T Current => _array[_index];
 
-	object? IEnumerator.Current => Current;
+	readonly object? IEnumerator.Current => Current;
 
 	public bool MoveNext()
 	{
-		index++;
-		return index < array.Length;
+		_index++;
+		return _index < _array.Length;
 	}
 
 	public void Reset()
-	{
-		index = -1;
-	}
+		=> _index = -1;
 
-	public void Dispose()
+	public readonly void Dispose()
 	{
 	}
 }
