@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using static MathUtils.Measures.Units;
+﻿using static MathUtils.Measures.Units;
 
 namespace MathUtils.Measures;
 
@@ -21,8 +20,8 @@ public static class Measures
 
 		Units.Init();
 
-		Angle = new Measure("Angle", new List<Unit>() { Angles.Degree, Angles.Radian }, Angles.Degree);
-		Storage = new Measure("Storage", new List<Unit>() { Storages.Byte, Storages.KiloByte, Storages.MegaByte, Storages.GigaByte, Storages.TeraByte, Storages.PetaByte }, Storages.Byte);
+		Angle = new Measure("Angle", [Angles.Degree, Angles.Radian], Angles.Degree);
+		Storage = new Measure("Storage", [Storages.Byte, Storages.KiloByte, Storages.MegaByte, Storages.GigaByte, Storages.TeraByte, Storages.PetaByte], Storages.Byte);
 
 		Units.Init2();
 

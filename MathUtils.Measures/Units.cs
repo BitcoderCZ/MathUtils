@@ -1,4 +1,5 @@
-﻿using static MathUtils.Measures.Units.Angles;
+﻿using System;
+using static MathUtils.Measures.Units.Angles;
 using static MathUtils.Measures.Units.Storages;
 
 namespace MathUtils.Measures;
@@ -13,7 +14,7 @@ public static class Units
 	internal static void Init()
 	{
 		Degree = new AngleUnit(Measures.Angle, "Degree", "°", 1d, 360d);
-		Radian = new AngleUnit(Measures.Angle, "Radian", "rad", Maths.RadToDeg, Maths.PI2);
+		Radian = new AngleUnit(Measures.Angle, "Radian", "rad", 180d / Math.PI, Math.PI * 2d);
 
 		Storages.Byte = new Unit(Measures.Storage, "Byte", "B", 1d);
 		KiloByte = new Unit(Measures.Storage, "KiloByte", "KB", 1024d);
