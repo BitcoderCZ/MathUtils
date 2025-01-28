@@ -210,7 +210,7 @@ public class VectorGenerator : IIncrementalGenerator
 			{
 				for (int j = 0; j < vec.NumbDimensions; j++)
 				{
-					builder.AppendLine($"public {vec.ElementType}2 {vec.AxisNames[i]}{vec.AxisNames[j]} => new {vec.ElementType}2({vec.AxisNames[i]}, {vec.AxisNames[j]});");
+					builder.AppendLine($"public readonly {vec.ElementType}2 {vec.AxisNames[i]}{vec.AxisNames[j]} => new {vec.ElementType}2({vec.AxisNames[i]}, {vec.AxisNames[j]});");
 				}
 			}
 
@@ -226,7 +226,7 @@ public class VectorGenerator : IIncrementalGenerator
 				{
 					for (int k = 0; k < vec.NumbDimensions; k++)
 					{
-						builder.AppendLine($"public {vec.ElementType}3 {vec.AxisNames[i]}{vec.AxisNames[j]}{vec.AxisNames[k]} => new {vec.ElementType}3({vec.AxisNames[i]}, {vec.AxisNames[j]}, {vec.AxisNames[k]});");
+						builder.AppendLine($"public readonly {vec.ElementType}3 {vec.AxisNames[i]}{vec.AxisNames[j]}{vec.AxisNames[k]} => new {vec.ElementType}3({vec.AxisNames[i]}, {vec.AxisNames[j]}, {vec.AxisNames[k]});");
 					}
 				}
 			}
@@ -235,7 +235,7 @@ public class VectorGenerator : IIncrementalGenerator
 		}
 
 		// ********** length **********
-		builder.Append($"public {(isLesserThanInt ? "int" : vec.ElementType)} LengthSquared => ");
+		builder.Append($"public readonly {(isLesserThanInt ? "int" : vec.ElementType)} LengthSquared => ");
 		for (int i = 0; i < vec.NumbDimensions; i++)
 		{
 			if (i != 0)
@@ -249,7 +249,7 @@ public class VectorGenerator : IIncrementalGenerator
 		builder.AppendLine("""
 			;
 			
-			public double Length => Math.Sqrt(LengthSquared);
+			public readonly double Length => Math.Sqrt(LengthSquared);
 
 			""");
 
@@ -258,7 +258,7 @@ public class VectorGenerator : IIncrementalGenerator
 			/// <exception cref="IndexOutOfRangeException"></exception>
 			public {{vec.ElementType}} this[int index]
 			{
-				get
+				readonly get
 				{
 					switch (index)
 					{
@@ -488,7 +488,7 @@ public class VectorGenerator : IIncrementalGenerator
 
 		// ********** GetEnumerator **********
 		builder.Append($"""
-			public IEnumerator<{vec.ElementType}> GetEnumerator()
+			public readonly IEnumerator<{vec.ElementType}> GetEnumerator()
 				=> new ArrayEnumerator<{vec.ElementType}>
 			""");
 		builder.AppendCallWithValues(vec);
@@ -498,7 +498,7 @@ public class VectorGenerator : IIncrementalGenerator
 			""");
 
 		builder.Append($"""
-			IEnumerator IEnumerable.GetEnumerator()
+			readonly IEnumerator IEnumerable.GetEnumerator()
 				=> new ArrayEnumerator<{vec.ElementType}>
 			""");
 		builder.AppendCallWithValues(vec);
@@ -578,7 +578,7 @@ public class VectorGenerator : IIncrementalGenerator
 		if (vec.Type == VectorToGenerate.VectorType.Vector && vec.IsFloatingPoint)
 		{
 			builder.AppendLine($"""
-				public {vec.Name} Normalized()
+				public readonly {vec.Name} Normalized()
 					=> this / ({vec.ElementType})Length;
 				
 				""");
@@ -600,7 +600,7 @@ public class VectorGenerator : IIncrementalGenerator
 
 		// ********** GetHashCode **********
 		builder.Append("""
-			public override int GetHashCode()
+			public readonly override int GetHashCode()
 				=> HashCode.Combine
 			""");
 		builder.AppendCallWithValues(vec);
@@ -611,23 +611,23 @@ public class VectorGenerator : IIncrementalGenerator
 
 		// ********** Equals **********
 		builder.AppendLine($"""
-			public override bool Equals(object? obj)
+			public readonly override bool Equals(object? obj)
 				=> obj is {vec.Name} other && this == other;
 			
-			public bool Equals({vec.Name} other)
+			public readonly bool Equals({vec.Name} other)
 				=> this == other;
 			
 			""");
 
 		// ********** ToString **********
 		builder.AppendLine("""
-			public override string ToString()
+			public readonly override string ToString()
 				=> ToString("G", CultureInfo.InvariantCulture);
 			
-			public string ToString(string format)
+			public readonly string ToString(string format)
 				=> ToString(format, CultureInfo.InvariantCulture);
 			
-			public string ToString(string format, IFormatProvider formatProvider)
+			public readonly string ToString(string format, IFormatProvider formatProvider)
 			{
 				StringBuilder sb = new StringBuilder();
 				string separator = NumberFormatInfo.GetInstance(formatProvider).NumberGroupSeparator;
