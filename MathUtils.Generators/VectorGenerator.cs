@@ -246,10 +246,10 @@ public class VectorGenerator : IIncrementalGenerator
 			builder.Append($"{vec.AxisNames[i]} * {vec.AxisNames[i]}");
 		}
 
-		builder.AppendLine("""
+		builder.AppendLine($"""
 			;
 			
-			public readonly double Length => Math.Sqrt(LengthSquared);
+			public readonly {(vec.ElementType == "float" ? "float" : "double")} Length => {(vec.ElementType == "float" ? "MathF" : "Math")}.Sqrt(LengthSquared);
 
 			""");
 
