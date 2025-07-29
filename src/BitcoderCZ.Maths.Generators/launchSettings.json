@@ -1,0 +1,8 @@
+{
+	"profiles": {
+		"BitcoderCZ.Maths.Generators": {
+			"commandName": "BitcoderCZ.Maths.Generators",
+			"targetProject": "..\\BitcoderCZ.Maths\\BitcoderCZ.Maths.csproj"
+		}
+	}
+}

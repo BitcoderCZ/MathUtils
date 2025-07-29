@@ -1,0 +1,11 @@
+<Project>
+    <PropertyGroup>
+        <Authors>BitcoderCZ</Authors>
+        <RepositoryUrl>https://github.com/BitcoderCZ/MathUtils</RepositoryUrl>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    </PropertyGroup>
+    <PropertyGroup>
+        <TrimMode>partial</TrimMode>
+        <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
+    </PropertyGroup>
+</Project>
