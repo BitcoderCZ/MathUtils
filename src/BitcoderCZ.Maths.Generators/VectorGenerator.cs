@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Numerics;
 using System.Text;
 
 namespace BitcoderCZ.Maths.Generators;
@@ -13,7 +14,7 @@ public class VectorGenerator : IIncrementalGenerator
 	private static readonly ImmutableArray<string> VectorTypes = ["byte", "sbyte", "short", "ushort", "int", "uint", "long", "ulong", "float", "double"];
 	private static readonly ImmutableArray<string> GroupTypes = ["byte", "sbyte", "short", "ushort", "int", "uint", "long", "ulong"];
 
-	private static readonly ImmutableArray<(string, string)> SizeTypes = [(string.Empty, "int"), ("L", "long"), ("F", "float")];
+	private static readonly ImmutableArray<(string Suffix, string ElementType)> SizeTypes = [(string.Empty, "int"), ("L", "long"), ("F", "float")];
 
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0022:Use expression body for method", Justification = "No")]
 	public void Initialize(IncrementalGeneratorInitializationContext context)
@@ -61,6 +62,7 @@ public class VectorGenerator : IIncrementalGenerator
 			using System.Collections;
 			using System.Collections.Generic;
 			using System.Globalization;
+			using System.Numerics;
 			using System.Runtime.CompilerServices;
 			using System.Text;
 			using BitcoderCZ.Maths.Utils;
@@ -333,6 +335,47 @@ public class VectorGenerator : IIncrementalGenerator
 		// ********** conversions **********
 		if (vec.Type == VectorToGenerate.VectorType.Vector)
 		{
+			// Vector{X} compatibility
+			builder.Append($"""
+				public static implicit operator {vec.Name}(Vector{vec.NumbDimensions} v)
+					=> new {vec.Name}(
+				""");
+
+			for (int j = 0; j < vec.NumbDimensions; j++)
+			{
+				if (j != 0)
+				{
+					builder.Append(", ");
+				}
+
+				builder.Append($"({vec.ElementType})v.{vec.AxisNames[j]}");
+			}
+
+			builder.AppendLine("""
+				);
+
+				""");
+
+			builder.Append($"""
+				public static implicit operator Vector{vec.NumbDimensions}({vec.Name} v)
+					=> new Vector{vec.NumbDimensions}(
+				""");
+
+			for (int j = 0; j < vec.NumbDimensions; j++)
+			{
+				if (j != 0)
+				{
+					builder.Append(", ");
+				}
+
+				builder.Append($"(float)v.{vec.AxisNames[j]}");
+			}
+
+			builder.AppendLine("""
+				);
+
+				""");
+
 			for (int i = 0; i < VectorTypes.Length; i++)
 			{
 				if (i == indexOfElementType)
@@ -343,6 +386,12 @@ public class VectorGenerator : IIncrementalGenerator
 				bool isExplicit = i > indexOfElementType || (isGroupType && (indexOfElementType % 2 == 0 ? (i == indexOfElementType + 1) : (i == indexOfElementType - 1)));
 
 				string otherType = VectorTypes[i];
+				otherType = otherType switch
+				{
+					"float2" => nameof(Vector2),
+					"float3" => nameof(Vector3),
+					_ => otherType,
+				};
 
 				builder.Append($"""
 				public static {(isExplicit ? "explicit" : "implicit")} operator {vec.Name}({otherType}{vec.NumbDimensions} v)
