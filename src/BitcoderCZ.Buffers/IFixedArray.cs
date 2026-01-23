@@ -21,6 +21,11 @@ public interface IFixedArray<T> : IEnumerable<T>
     [UnscopedRef]
     ref T this[int index] { get; }
 
+    T GetElement(int index);
+
+    [UnscopedRef]
+    ref readonly T GetElementRef(int index);
+
     Span<T> AsSpan();
 
     ReadOnlySpan<T> AsROSpan();

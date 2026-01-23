@@ -99,6 +99,21 @@ public class FixedArrayGenerator : IIncrementalGenerator
 					}
 				}
 
+				public readonly T GetElement(int index)
+				{
+					ThrowHelper.ThrowIfGreaterThanOrEqualToOrNegative(index, LengthConst);
+
+					return Unsafe.Add(ref Unsafe.AsRef(in _value0), index);
+				}
+
+				[UnscopedRef]
+				public readonly ref readonly T GetElementRef(int index)
+				{
+					ThrowHelper.ThrowIfGreaterThanOrEqualToOrNegative(index, LengthConst);
+
+					return ref Unsafe.Add(ref Unsafe.AsRef(in _value0), index);
+				}
+
 				public readonly Span<T> AsSpan()
 					=> System.Runtime.InteropServices.MemoryMarshal.CreateSpan(ref Unsafe.AsRef(in _value0), LengthConst);
 
