@@ -212,6 +212,7 @@ public class VectorGenerator : IIncrementalGenerator
 			{
 				for (int j = 0; j < vec.NumbDimensions; j++)
 				{
+					builder.AppendLine("[System.Diagnostics.DebuggerBrowsable(System.Diagnostics.DebuggerBrowsableState.Never)]");
 					builder.AppendLine($"public readonly {vec.ElementType}2 {vec.AxisNames[i]}{vec.AxisNames[j]} => new {vec.ElementType}2({vec.AxisNames[i]}, {vec.AxisNames[j]});");
 				}
 			}
@@ -228,6 +229,7 @@ public class VectorGenerator : IIncrementalGenerator
 				{
 					for (int k = 0; k < vec.NumbDimensions; k++)
 					{
+						builder.AppendLine("[System.Diagnostics.DebuggerBrowsable(System.Diagnostics.DebuggerBrowsableState.Never)]");
 						builder.AppendLine($"public readonly {vec.ElementType}3 {vec.AxisNames[i]}{vec.AxisNames[j]}{vec.AxisNames[k]} => new {vec.ElementType}3({vec.AxisNames[i]}, {vec.AxisNames[j]}, {vec.AxisNames[k]});");
 					}
 				}
