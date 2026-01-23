@@ -7,6 +7,8 @@
         <PackageId>BitcoderCZ.Maths</PackageId>
         <Version>1.1.0</Version>
         <Description>Math utils and stuff.</Description>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+   	 	<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 	</PropertyGroup>
 
 	<PropertyGroup>
