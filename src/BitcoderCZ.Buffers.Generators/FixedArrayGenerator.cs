@@ -11,7 +11,7 @@ namespace BitcoderCZ.Buffers.Generators;
 [Generator]
 public class FixedArrayGenerator : IIncrementalGenerator
 {
-	private static readonly ImmutableArray<int> Lengths = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 32, 64, 128, 256, 512];
+	private static readonly ImmutableArray<int> Lengths = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 32, 64, 128, 256, 512, 1024];
 
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0022:Use expression body for method", Justification = "No")]
 	public void Initialize(IncrementalGeneratorInitializationContext context)

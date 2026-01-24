@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -11,6 +12,7 @@ namespace BitcoderCZ.Buffers;
 public static class ImmutableInlineArray
 {
     [OverloadResolutionPriority(1)]
+    [SkipLocalsInit]
     public static void Create<TArray, TElement>(out ImmutableInlineArray<TArray, TElement> array, params ReadOnlySpan<TElement> items)
         where TArray : struct, IFixedArray<TElement>
         where TElement : IEquatable<TElement>
@@ -23,7 +25,7 @@ public static class ImmutableInlineArray
 
         int inlineCapacity = ImmutableInlineArray<TArray, TElement>.InlineCapacity;
 
-        TArray inline = default;
+        Unsafe.SkipInit(out TArray inline);
         items[..Math.Min(items.Length, inlineCapacity)].CopyTo(inline.AsSpan());
 
         TElement[]? overflow = null;
@@ -155,18 +157,25 @@ public readonly struct ImmutableInlineArray<TArray, TElement> : IReadOnlyList<TE
 
     internal static readonly int InlineCapacity = FixedArray.GetLength<TArray, TElement>();
 
-    private readonly int _count;
+    private readonly int _length;
     private readonly TArray _inline;
     private readonly TElement[]? _overflow;
 
-    internal ImmutableInlineArray(int count, TArray inline, TElement[]? overflow)
+    internal ImmutableInlineArray(int length, TArray inline, TElement[]? overflow)
     {
-        _count = count;
+        _length = length;
         _inline = inline;
         _overflow = overflow;
     }
 
-    public int Count => _count;
+    public readonly int Length
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _length;
+    }
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public readonly int Count => _length;
 
     public readonly TElement this[int index]
     {
@@ -188,25 +197,54 @@ public readonly struct ImmutableInlineArray<TArray, TElement> : IReadOnlyList<TE
 
     public readonly void CopyTo(Span<TElement> span)
     {
-        if (span.Length < _count)
+        if (span.Length < _length)
         {
             ThrowArgumentOutOfRangeException(nameof(span), $"{nameof(span)} is not large enough.");
         }
 
-        _inline.AsROSpan()[..Math.Min(_count, InlineCapacity)].CopyTo(span);
+        _inline.AsROSpan()[..Math.Min(_length, InlineCapacity)].CopyTo(span);
 
-        _overflow?.AsSpan()[..(_count - InlineCapacity)].CopyTo(span[InlineCapacity..]);
+        _overflow?.AsSpan()[..(_length - InlineCapacity)].CopyTo(span[InlineCapacity..]);
+    }
+
+    public readonly void CopyRangeTo(Range range, Span<TElement> span)
+    {
+        var (offset, length) = range.GetOffsetAndLength(_length);
+        int end = offset + length;
+
+        if (span.Length < length)
+        {
+            ThrowArgumentOutOfRangeException(nameof(span), $"{nameof(span)} is not large enough.");
+        }
+
+        if (length is 0)
+        {
+            return;
+        }
+
+        if (offset < InlineCapacity)
+        {
+            int inlineCopyCount = Math.Min(length, InlineCapacity - offset);
+            _inline.AsROSpan().Slice(offset, inlineCopyCount).CopyTo(span);
+
+            span = span[inlineCopyCount..];
+        }
+
+        if (end > InlineCapacity)
+        {
+            _overflow?.AsSpan()[Math.Max(0, offset - InlineCapacity)..(end - InlineCapacity)].CopyTo(span);
+        }
     }
 
     public readonly int IndexOf(TElement item, EqualityComparer<TElement> comparer)
     {
-        if (_count == 0)
+        if (_length == 0)
         {
             return -1;
         }
 
         var bufferSpan = _inline.AsROSpan();
-        for (int i = 0; i < Math.Min(_count, InlineCapacity); i++)
+        for (int i = 0; i < Math.Min(_length, InlineCapacity); i++)
         {
 #pragma warning disable HAM0001 // Operation causes the compiler to create a defensive copy
             if (comparer.Equals(bufferSpan[i], item))
@@ -216,13 +254,149 @@ public readonly struct ImmutableInlineArray<TArray, TElement> : IReadOnlyList<TE
             }
         }
 
-        if (_overflow is not null && _count > InlineCapacity)
+        if (_overflow is not null && _length > InlineCapacity)
         {
-            int index = _overflow.AsSpan()[..(_count - InlineCapacity)].IndexOf(item);
+            int index = _overflow.AsSpan()[..(_length - InlineCapacity)].IndexOf(item);
             return index == -1 ? -1 : index + InlineCapacity;
         }
 
         return -1;
+    }
+
+    [SkipLocalsInit]
+    public readonly void Add(TElement item, out ImmutableInlineArray<TArray, TElement> newArray)
+    {
+        int newLength = _length + 1;
+
+        Span<TElement> buffer;
+        TArray stackBuffer;
+        if (newLength <= InlineCapacity)
+        {
+            if (RuntimeHelpers.IsReferenceOrContainsReferences<TArray>())
+            {
+                stackBuffer = default;
+            }
+            else
+            {
+                Unsafe.SkipInit(out stackBuffer);
+            }
+
+            buffer = stackBuffer.AsSpan()[..newLength];
+        }
+        else
+        {
+            buffer = new TElement[newLength];
+        }
+
+        CopyTo(buffer);
+        buffer[_length] = item;
+
+        ImmutableInlineArray.Create(out newArray, buffer);
+    }
+
+    public readonly ImmutableInlineArray<TArray, TElement> Add(TElement item)
+    {
+        Add(item, out var result);
+        return result;
+    }
+
+    public readonly void Insert(int index, TElement item, out ImmutableInlineArray<TArray, TElement> newArray)
+    {
+        ThrowIfGreaterThanOrEqualToOrNegative(index, Length + 1);
+
+        int newLength = _length + 1;
+        Span<TElement> buffer;
+        TArray stackBuffer;
+        if (newLength <= InlineCapacity)
+        {
+            if (RuntimeHelpers.IsReferenceOrContainsReferences<TArray>())
+            {
+                stackBuffer = default;
+            }
+            else
+            {
+                Unsafe.SkipInit(out stackBuffer);
+            }
+
+            buffer = stackBuffer.AsSpan()[..newLength];
+        }
+        else
+        {
+            buffer = new TElement[newLength];
+        }
+
+        CopyTo(buffer);
+
+        if (index != _length)
+        {
+            buffer[index..^1].CopyTo(buffer[(index + 1)..]);
+        }
+
+        buffer[index] = item;
+
+        ImmutableInlineArray.Create(out newArray, buffer);
+    }
+
+    public readonly ImmutableInlineArray<TArray, TElement> Insert(int index, TElement item)
+    {
+        Insert(index, item, out var result);
+        return result;
+    }
+
+    public readonly void RemoveAt(int index, out ImmutableInlineArray<TArray, TElement> newArray)
+    {
+        ThrowIfGreaterThanOrEqualToOrNegative(index, Length);
+
+        int newLength = _length - 1;
+        Span<TElement> buffer;
+        TArray stackBuffer;
+        if (newLength <= InlineCapacity)
+        {
+            if (RuntimeHelpers.IsReferenceOrContainsReferences<TArray>())
+            {
+                stackBuffer = default;
+            }
+            else
+            {
+                Unsafe.SkipInit(out stackBuffer);
+            }
+
+            buffer = stackBuffer.AsSpan()[..newLength];
+        }
+        else
+        {
+            buffer = new TElement[newLength];
+        }
+
+        CopyRangeTo(..index, buffer);
+        CopyRangeTo((index + 1).., buffer[index..]);
+
+        ImmutableInlineArray.Create(out newArray, buffer);
+    }
+
+    public readonly ImmutableInlineArray<TArray, TElement> RemoveAt(int index)
+    {
+        RemoveAt(index, out var result);
+        return result;
+    }
+
+    public readonly void Remove(TElement item, EqualityComparer<TElement> comparer, out ImmutableInlineArray<TArray, TElement> newArray)
+    {
+        int index = IndexOf(item, comparer);
+
+        if (index == -1)
+        {
+            newArray = this;
+            return;
+        }
+
+        RemoveAt(index, out newArray);
+    }
+
+    public readonly ImmutableInlineArray<TArray, TElement> Remove(TElement item, EqualityComparer<TElement> comparer)
+    {
+        Remove(item, comparer, out var result);
+        return result;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -237,6 +411,7 @@ public readonly struct ImmutableInlineArray<TArray, TElement> : IReadOnlyList<TE
     readonly IEnumerator IEnumerable.GetEnumerator()
         => GetEnumerator();
 
+    // todo: AddRange(IEnumerable/ReadOnlySpan), Remove
     public struct Builder
     {
         private int _count;
@@ -246,7 +421,9 @@ public readonly struct ImmutableInlineArray<TArray, TElement> : IReadOnlyList<TE
         internal Builder(int capacity)
         {
             if (capacity > InlineCapacity)
+            {
                 _overflow = new TElement[capacity - InlineCapacity];
+            }
         }
 
         public readonly int Count => _count;
