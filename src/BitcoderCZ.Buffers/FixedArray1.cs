@@ -79,7 +79,7 @@ public struct FixedArray1<T> : IFixedArray<T>
     }
 
     public readonly Span<T> AsSpan()
-        => new Span<T>(ref Unsafe.AsRef(in _value0));
+        =>  System.Runtime.InteropServices.MemoryMarshal.CreateSpan(ref Unsafe.AsRef(in _value0), LengthConst);
 
     public readonly ReadOnlySpan<T> AsROSpan()
         => System.Runtime.InteropServices.MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef(in _value0), LengthConst);
