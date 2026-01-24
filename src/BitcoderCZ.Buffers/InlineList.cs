@@ -385,10 +385,6 @@ public struct InlineList<TArray, TElement> : IList<TElement>, IReadOnlyList<TEle
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static int GetBufferCapacity()
-        => FixedArray.GetLength<TArray, TElement>();
-
     private void IntroSort(int lo, int hi, int depthLimit, IComparer<TElement> comparer)
     {
         while (hi > lo)
