@@ -1,18 +1,159 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using static BitcoderCZ.Utils.ThrowHelper;
 
 namespace BitcoderCZ.Buffers;
 
+public static class ImmutableInlineArray
+{
+    [OverloadResolutionPriority(1)]
+    public static void Create<TArray, TElement>(out ImmutableInlineArray<TArray, TElement> array, params ReadOnlySpan<TElement> items)
+        where TArray : struct, IFixedArray<TElement>
+        where TElement : IEquatable<TElement>
+    {
+        if (items.IsEmpty)
+        {
+            array = ImmutableInlineArray<TArray, TElement>.Empty;
+            return;
+        }
+
+        int inlineCapacity = ImmutableInlineArray<TArray, TElement>.InlineCapacity;
+
+        TArray inline = default;
+        items[..Math.Min(items.Length, inlineCapacity)].CopyTo(inline.AsSpan());
+
+        TElement[]? overflow = null;
+        if (items.Length > inlineCapacity)
+        {
+            overflow = new TElement[items.Length - inlineCapacity];
+            items[inlineCapacity..].CopyTo(overflow);
+        }
+
+        array = new ImmutableInlineArray<TArray, TElement>(items.Length, inline, overflow);
+    }
+
+    [OverloadResolutionPriority(1)]
+    public static ImmutableInlineArray<TArray, TElement> Create<TArray, TElement>(params ReadOnlySpan<TElement> items)
+        where TArray : struct, IFixedArray<TElement>
+        where TElement : IEquatable<TElement>
+    {
+        Create<TArray, TElement>(out var array, items);
+        return array;
+    }
+
+    public static void Create<TArray, TElement>(out ImmutableInlineArray<TArray, TElement> array, IEnumerable<TElement> items, bool trim = false)
+        where TArray : struct, IFixedArray<TElement>
+        where TElement : IEquatable<TElement>
+    {
+        ThrowIfNull(items);
+
+        int inlineCapacity = ImmutableInlineArray<TArray, TElement>.InlineCapacity;
+#if NET6_0_OR_GREATER
+        if (items.TryGetNonEnumeratedCount(out int count))
+        {
+            if (count == 0)
+            {
+                array = ImmutableInlineArray<TArray, TElement>.Empty;
+                return;
+            }
+
+            TArray inline = default;
+
+            TElement[]? overflow = count > inlineCapacity ? new TElement[count - inlineCapacity] : null;
+
+            int i = 0;
+            int o = 0;
+
+            foreach (var item in items)
+            {
+                if (i < inlineCapacity)
+                {
+                    inline[i++] = item;
+                }
+                else
+                {
+                    overflow![o++] = item;
+                }
+            }
+
+            array = new ImmutableInlineArray<TArray, TElement>(count, inline, overflow);
+            return;
+        }
+#endif
+
+        using var enumerator = items.GetEnumerator();
+
+        if (!enumerator.MoveNext())
+        {
+            array = ImmutableInlineArray<TArray, TElement>.Empty;
+            return;
+        }
+
+        TArray inlineFallback = default;
+
+        TElement[]? overflowFallback = null;
+        int overflowCount = 0;
+        int length = 0;
+
+        do
+        {
+            var item = enumerator.Current;
+
+            if (length < inlineCapacity)
+            {
+                inlineFallback[length] = item;
+            }
+            else
+            {
+                if (overflowFallback is null)
+                {
+                    overflowFallback = new TElement[Math.Min(inlineCapacity, 4)];
+                }
+                else if (overflowCount == overflowFallback.Length)
+                {
+                    Array.Resize(ref overflowFallback, overflowFallback.Length * 2);
+                }
+
+                overflowFallback[overflowCount++] = item;
+            }
+
+            length++;
+        }
+        while (enumerator.MoveNext());
+
+        if (overflowCount is 0)
+        {
+            overflowFallback = null;
+        }
+        else if (trim && overflowCount != overflowFallback!.Length)
+        {
+            Array.Resize(ref overflowFallback, overflowCount);
+        }
+
+        array = new ImmutableInlineArray<TArray, TElement>(length, inlineFallback, overflowFallback);
+    }
+
+    public static ImmutableInlineArray<TArray, TElement> Create<TArray, TElement>(IEnumerable<TElement> items)
+        where TArray : struct, IFixedArray<TElement>
+        where TElement : IEquatable<TElement>
+    {
+        Create<TArray, TElement>(out var array, items);
+        return array;
+    }
+}
+
 [StructLayout(LayoutKind.Auto)]
 public readonly struct ImmutableInlineArray<TArray, TElement> : IReadOnlyList<TElement>
     where TArray : struct, IFixedArray<TElement>
     where TElement : IEquatable<TElement>
 {
-    private static readonly int InlineCapacity = FixedArray.GetLength<TArray, TElement>();
+    public static readonly ImmutableInlineArray<TArray, TElement> Empty = new(0, default, null);
+
+    internal static readonly int InlineCapacity = FixedArray.GetLength<TArray, TElement>();
 
     private readonly int _count;
     private readonly TArray _inline;
