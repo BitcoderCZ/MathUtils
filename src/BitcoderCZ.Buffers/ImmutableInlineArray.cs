@@ -418,11 +418,13 @@ public readonly struct ImmutableInlineArray<TArray, TElement> : IReadOnlyList<TE
         private TArray _inline;
         private TElement[]? _overflow;
 
-        internal Builder(int capacity)
+        public Builder(int initialCapacity)
         {
-            if (capacity > InlineCapacity)
+            ThrowIfNegative(initialCapacity);
+
+            if (initialCapacity > InlineCapacity)
             {
-                _overflow = new TElement[capacity - InlineCapacity];
+                _overflow = new TElement[initialCapacity - InlineCapacity];
             }
         }
 
