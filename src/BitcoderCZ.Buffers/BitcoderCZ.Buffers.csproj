@@ -5,7 +5,7 @@
     <LangVersion>14.0</LangVersion>
     <Nullable>enable</Nullable>
     <PackageId>BitcoderCZ.Buffers</PackageId>
-    <Version>1.1.0</Version>
+    <Version>1.2.0</Version>
     <Description>Buffers and stuff.</Description>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
