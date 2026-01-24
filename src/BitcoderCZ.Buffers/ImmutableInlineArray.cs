@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using static BitcoderCZ.Utils.ThrowHelper;
@@ -11,6 +10,7 @@ namespace BitcoderCZ.Buffers;
 [StructLayout(LayoutKind.Auto)]
 public readonly struct ImmutableInlineArray<TArray, TElement> : IReadOnlyList<TElement>
     where TArray : struct, IFixedArray<TElement>
+    where TElement : IEquatable<TElement>
 {
     private static readonly int InlineCapacity = FixedArray.GetLength<TArray, TElement>();
 
