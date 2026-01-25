@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -175,14 +176,19 @@ public readonly struct ImmutableInlineArray<TArray, TElement> : IReadOnlyList<TE
     [EditorBrowsable(EditorBrowsableState.Never)]
     public readonly int Count => _length;
 
+    // IFixedArray.AsROSpan cannot be marked readonly, so AsROSpan will make a defensive copy, so need to use this workaround
+    [UnscopedRef]
+    private readonly ReadOnlySpan<TElement> ROInlineSpan => MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<TArray, TElement>(ref Unsafe.AsRef(in _inline)), InlineCapacity); //_buffer.AsROSpan()
+
     public readonly TElement this[int index]
     {
         get
         {
             ThrowIfGreaterThanOrEqualToOrNegative(index, Count, nameof(index));
 
+            // IFixedArray.GetElement cannot be marked readonly, so AsROSpan will make a defensive copy, so need to use this workaround
             return index < InlineCapacity
-                ? _inline.GetElement(index)
+                ? Unsafe.Add(ref Unsafe.As<TArray, TElement>(ref Unsafe.AsRef(in _inline)), index) //_inline.GetElement(index)
                 : _overflow![index - InlineCapacity];
         }
     }
@@ -200,7 +206,7 @@ public readonly struct ImmutableInlineArray<TArray, TElement> : IReadOnlyList<TE
             ThrowArgumentOutOfRangeException(nameof(span), $"{nameof(span)} is not large enough.");
         }
 
-        _inline.AsROSpan()[..Math.Min(_length, InlineCapacity)].CopyTo(span);
+        ROInlineSpan[..Math.Min(_length, InlineCapacity)].CopyTo(span);
 
         _overflow?.AsSpan()[..(_length - InlineCapacity)].CopyTo(span[InlineCapacity..]);
     }
@@ -223,7 +229,7 @@ public readonly struct ImmutableInlineArray<TArray, TElement> : IReadOnlyList<TE
         if (offset < InlineCapacity)
         {
             int inlineCopyCount = Math.Min(length, InlineCapacity - offset);
-            _inline.AsROSpan().Slice(offset, inlineCopyCount).CopyTo(span);
+            ROInlineSpan.Slice(offset, inlineCopyCount).CopyTo(span);
 
             span = span[inlineCopyCount..];
         }
@@ -241,7 +247,7 @@ public readonly struct ImmutableInlineArray<TArray, TElement> : IReadOnlyList<TE
             return -1;
         }
 
-        var bufferSpan = _inline.AsROSpan();
+        var bufferSpan = ROInlineSpan;
         for (int i = 0; i < Math.Min(_length, InlineCapacity); i++)
         {
 #pragma warning disable HAM0001 // Operation causes the compiler to create a defensive copy
@@ -378,22 +384,24 @@ public readonly struct ImmutableInlineArray<TArray, TElement> : IReadOnlyList<TE
         return result;
     }
 
-    public readonly void Remove(TElement item, EqualityComparer<TElement> comparer, out ImmutableInlineArray<TArray, TElement> newArray)
+    public readonly void Remove(TElement item, EqualityComparer<TElement> comparer, out ImmutableInlineArray<TArray, TElement> newArray, out bool removed)
     {
         int index = IndexOf(item, comparer);
 
         if (index == -1)
         {
             newArray = this;
+            removed = false;
             return;
         }
 
         RemoveAt(index, out newArray);
+        removed = true;
     }
 
-    public readonly ImmutableInlineArray<TArray, TElement> Remove(TElement item, EqualityComparer<TElement> comparer)
+    public readonly ImmutableInlineArray<TArray, TElement> Remove(TElement item, EqualityComparer<TElement> comparer, out bool removed)
     {
-        Remove(item, comparer, out var result);
+        Remove(item, comparer, out var result, out removed);
         return result;
     }
 
@@ -559,9 +567,7 @@ public readonly struct ImmutableInlineArray<TArray, TElement> : IReadOnlyList<TE
 
             if ((uint)_index < (uint)_array.Count)
             {
-                _current = _index < InlineCapacity
-                    ? _array._inline.GetElement(_index)
-                    : _array._overflow![_index - InlineCapacity];
+                _current = _array[_index];
 
                 return true;
             }

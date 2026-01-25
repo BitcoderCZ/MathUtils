@@ -257,11 +257,26 @@ public abstract class ImmutableInlineArrayTests<TArray> where TArray : struct, I
         var array = ImmutableInlineArray.Create<TArray, int>([1, 5, 10]);
         
         // Act
-        var result = array.Remove(5, EqualityComparer<int>.Default);
+        var result = array.Remove(5, EqualityComparer<int>.Default, out var removed);
 
         // Assert
+        await Assert.That(removed).IsTrue();
         await Assert.That(result.Length).IsEqualTo(2);
         await Assert.That(result.Contains(5, EqualityComparer<int>.Default)).IsFalse();
+    }
+
+    [Test]
+    public async Task Remove_ReturnsFalse_WhenItemIsNotInArray()
+    {
+        // Arrange
+        var array = ImmutableInlineArray.Create<TArray, int>([1, 5, 10]);
+        
+        // Act
+        var result = array.Remove(2, EqualityComparer<int>.Default, out var removed);
+
+        // Assert
+        await Assert.That(removed).IsFalse();
+        await Assert.That(result.Length).IsEqualTo(3);
     }
 
     [Test]

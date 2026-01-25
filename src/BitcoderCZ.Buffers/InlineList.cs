@@ -89,8 +89,9 @@ public struct InlineList<TArray, TElement> : IList<TElement>, IReadOnlyList<TEle
     private Span<TElement> BufferSpan => _buffer.AsSpan();
 #pragma warning restore IDE0251 // Make member 'readonly'
 
+    // IFixedArray.AsROSpan cannot be marked readonly, so AsROSpan will make a defensive copy, so need to use this workaround
     [UnscopedRef]
-    private readonly ReadOnlySpan<TElement> ROBufferSpan => _buffer.AsROSpan();
+    private readonly ReadOnlySpan<TElement> ROBufferSpan => MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<TArray, TElement>(ref Unsafe.AsRef(in _buffer)), BufferCapacity);
 
     public TElement this[int index]
     {
@@ -218,7 +219,7 @@ public struct InlineList<TArray, TElement> : IList<TElement>, IReadOnlyList<TEle
 
     public void Insert(int index, TElement item)
     {
-        ThrowIfGreaterThanOrEqualToOrNegative(index, Count, nameof(index));
+        ThrowIfGreaterThanOrEqualToOrNegative(index, Count + 1, nameof(index));
 
         if (index == _count)
         {
@@ -317,16 +318,16 @@ public struct InlineList<TArray, TElement> : IList<TElement>, IReadOnlyList<TEle
         {
             return false;
         }
-        else if (Count is 0)
+        else if (Count is 0) // already tested that Count is equal
         {
             return true;
         }
 
-		return ROBufferSpan[..Math.Min(Count, BufferCapacity)].SequenceEqual(other.ROBufferSpan[..Math.Min(Count, BufferCapacity)]) && 
+        return ROBufferSpan[..Math.Min(Count, BufferCapacity)].SequenceEqual(other.ROBufferSpan[..Math.Min(Count, BufferCapacity)]) &&
             (_list is null || other._list is null || _list.SequenceEqual(other._list));
-	}
+    }
 
-	public readonly int CalculateHashCode()
+    public readonly int CalculateHashCode()
     {
         HashCode hashCode = default;
         foreach (var item in this)
