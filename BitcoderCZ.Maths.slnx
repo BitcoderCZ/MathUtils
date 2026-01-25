@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/BitcoderCZ.Buffers.Tests/BitcoderCZ.Buffers.Tests.csproj" />
+  </Folder>
+  <Project Path="src/BitcoderCZ.Buffers.Generators/BitcoderCZ.Buffers.Generators.csproj" />
+  <Project Path="src/BitcoderCZ.Buffers/BitcoderCZ.Buffers.csproj" />
+  <Project Path="src/BitcoderCZ.Maths.Generators/BitcoderCZ.Maths.Generators.csproj" />
+  <Project Path="src/BitcoderCZ.Maths/BitcoderCZ.Maths.csproj" />
+  <Project Path="src/BitcoderCZ.Utils/BitcoderCZ.Utils.csproj" />
+</Solution>

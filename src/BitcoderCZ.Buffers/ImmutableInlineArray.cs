@@ -11,7 +11,6 @@ namespace BitcoderCZ.Buffers;
 
 public static class ImmutableInlineArray
 {
-    [OverloadResolutionPriority(1)]
     [SkipLocalsInit]
     public static void Create<TArray, TElement>(out ImmutableInlineArray<TArray, TElement> array, params ReadOnlySpan<TElement> items)
         where TArray : struct, IFixedArray<TElement>
@@ -38,7 +37,6 @@ public static class ImmutableInlineArray
         array = new ImmutableInlineArray<TArray, TElement>(items.Length, inline, overflow);
     }
 
-    [OverloadResolutionPriority(1)]
     public static ImmutableInlineArray<TArray, TElement> Create<TArray, TElement>(params ReadOnlySpan<TElement> items)
         where TArray : struct, IFixedArray<TElement>
         where TElement : IEquatable<TElement>
@@ -47,7 +45,7 @@ public static class ImmutableInlineArray
         return array;
     }
 
-    public static void Create<TArray, TElement>(out ImmutableInlineArray<TArray, TElement> array, IEnumerable<TElement> items, bool trim = false)
+    public static void CreateRange<TArray, TElement>(out ImmutableInlineArray<TArray, TElement> array, IEnumerable<TElement> items, bool trim = false)
         where TArray : struct, IFixedArray<TElement>
         where TElement : IEquatable<TElement>
     {
@@ -139,11 +137,11 @@ public static class ImmutableInlineArray
         array = new ImmutableInlineArray<TArray, TElement>(length, inlineFallback, overflowFallback);
     }
 
-    public static ImmutableInlineArray<TArray, TElement> Create<TArray, TElement>(IEnumerable<TElement> items)
+    public static ImmutableInlineArray<TArray, TElement> CreateRange<TArray, TElement>(IEnumerable<TElement> items)
         where TArray : struct, IFixedArray<TElement>
         where TElement : IEquatable<TElement>
     {
-        Create<TArray, TElement>(out var array, items);
+        CreateRange<TArray, TElement>(out var array, items);
         return array;
     }
 }
