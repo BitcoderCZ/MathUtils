@@ -13,7 +13,7 @@ namespace BitcoderCZ.Buffers;
 [StructLayout(LayoutKind.Auto)]
 public struct InlineList<TArray, TElement> : IList<TElement>, IReadOnlyList<TElement>
     where TArray : struct, IFixedArray<TElement>
-    where TElement : unmanaged, IEquatable<TElement>
+    where TElement : IEquatable<TElement>
 {
     private const int ListStartCapacity = 4;
 
@@ -354,21 +354,22 @@ public struct InlineList<TArray, TElement> : IList<TElement>, IReadOnlyList<TEle
             return;
         }
 
-        if (_count <= 64)
-        {
-            Span<TElement> temp = stackalloc TElement[_count];
+        // if (_count <= 32)
+        // {
+        //     Unsafe.SkipInit(out FixedArray64<TElement> temp);
+        //     var tempSpan = temp.AsSpan(0, _count);
 
-            BufferSpan.CopyTo(temp);
+        //     BufferSpan.CopyTo(tempSpan);
 
-            CollectionsMarshal.AsSpan(_list!).CopyTo(temp[BufferCapacity..]);
+        //     CollectionsMarshal.AsSpan(_list!).CopyTo(tempSpan[BufferCapacity..]);
 
-            temp.Sort(comparer);
+        //     tempSpan.Sort(comparer);
 
-            temp[..BufferCapacity].CopyTo(BufferSpan);
-            temp[BufferCapacity.._count].CopyTo(CollectionsMarshal.AsSpan(_list));
+        //     tempSpan[..BufferCapacity].CopyTo(BufferSpan);
+        //     tempSpan[BufferCapacity.._count].CopyTo(CollectionsMarshal.AsSpan(_list));
 
-            return;
-        }
+        //     return;
+        // }
 #endif
 
         IntroSort(0, _count - 1, 2 * FloorLog2(_count), comparer);
