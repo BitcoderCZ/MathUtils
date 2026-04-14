@@ -145,6 +145,7 @@ public class FixedArrayGenerator : IIncrementalGenerator
 				readonly IEnumerator IEnumerable.GetEnumerator()
 					=> new Enumerator(this);
 
+				[System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Auto)]
 				public struct Enumerator : IEnumerator<T>
 				{
 					private FixedArray{{length}}<T> _array;
@@ -190,6 +191,7 @@ public class FixedArrayGenerator : IIncrementalGenerator
 				}
 
 			#if NET7_0_OR_GREATER
+				[System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Auto)]
 				public ref struct RefEnumerator : IEnumerator<T>
 				{
 					private ref readonly FixedArray{{length}}<T> _array;

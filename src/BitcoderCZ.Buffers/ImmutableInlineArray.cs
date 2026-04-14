@@ -418,6 +418,7 @@ public readonly struct ImmutableInlineArray<TArray, TElement> : IReadOnlyList<TE
         => GetEnumerator();
 
     // todo: AddRange(IEnumerable/ReadOnlySpan), Remove
+    [StructLayout(LayoutKind.Auto)]
     public struct Builder
     {
         private int _count;
@@ -532,6 +533,7 @@ public readonly struct ImmutableInlineArray<TArray, TElement> : IReadOnlyList<TE
         }
     }
 
+    [StructLayout(LayoutKind.Auto)]
     public struct Enumerator : IEnumerator<TElement>
     {
         private readonly ImmutableInlineArray<TArray, TElement> _array;

@@ -533,6 +533,7 @@ public struct InlineList<TArray, TElement> : IList<TElement>, IReadOnlyList<TEle
     readonly IEnumerator IEnumerable.GetEnumerator()
         => GetEnumerator();
 
+    [StructLayout(LayoutKind.Auto)]
     public struct Enumerator : IEnumerator<TElement>
     {
         private readonly InlineList<TArray, TElement> _list;
