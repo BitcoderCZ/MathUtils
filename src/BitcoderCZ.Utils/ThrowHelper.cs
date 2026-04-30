@@ -124,7 +124,7 @@ public static class ThrowHelper
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void ThrowIfNull<T>(T? value, [CallerArgumentExpression("value")] string paramName = "")
+    public static void ThrowIfNull<T>([NotNull] T? value, [CallerArgumentExpression("value")] string paramName = "")
     {
         if (value is null)
         {
