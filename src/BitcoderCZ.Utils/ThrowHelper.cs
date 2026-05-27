@@ -128,7 +128,7 @@ public static class ThrowHelper
     {
         if (value is null)
         {
-            ThrowArgumentOutOfRangeException(paramName, $"{paramName} cannot be null.");
+            ThrowArgumentNullException(paramName, $"{paramName} cannot be null.");
         }
     }
     #endregion
