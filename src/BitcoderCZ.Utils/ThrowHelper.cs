@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -129,6 +130,64 @@ public static class ThrowHelper
         if (value is null)
         {
             ThrowArgumentNullException(paramName, $"{paramName} cannot be null.");
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void ThrowIfNullOrEmpty<T>([NotNull] T[]? value, [CallerArgumentExpression("value")] string paramName = "")
+    {
+        if (value is null)
+        {
+            ThrowArgumentNullException(paramName, $"{paramName} cannot be null.");
+        }
+
+        if (value.Length is 0)
+        {
+            ThrowArgumentException($"{paramName} cannot be empty.", paramName);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void ThrowIfNullOrEmpty<T>([NotNull] ImmutableArray<T> value, [CallerArgumentExpression("value")] string paramName = "")
+    {
+        if (value.IsDefault)
+        {
+            ThrowArgumentNullException(paramName, $"{paramName} cannot be null.");
+        }
+
+        if (value.Length is 0)
+        {
+            ThrowArgumentException($"{paramName} cannot be empty.", paramName);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [OverloadResolutionPriority(-1)]
+    public static void ThrowIfNullOrEmpty<T>([NotNull] IReadOnlyCollection<T>? value, [CallerArgumentExpression("value")] string paramName = "")
+    {
+        if (value is null)
+        {
+            ThrowArgumentNullException(paramName, $"{paramName} cannot be null.");
+        }
+
+        if (value.Count is 0)
+        {
+            ThrowArgumentException($"{paramName} cannot be empty.", paramName);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [OverloadResolutionPriority(-2)]
+    public static void ThrowIfNullOrEmpty<T>([NotNull] ICollection<T>? value, [CallerArgumentExpression("value")] string paramName = "")
+    {
+        if (value is null)
+        {
+            ThrowArgumentNullException(paramName, $"{paramName} cannot be null.");
+        }
+
+        if (value.Count is 0)
+        {
+            ThrowArgumentException($"{paramName} cannot be empty.", paramName);
         }
     }
     #endregion
