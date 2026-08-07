@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
 param (
-	[Parameter(Mandatory=$false)]
+	[Parameter(Mandatory = $false)]
 	[ValidateSet("Debug", "Release")]
 	[string]$Configuration = 'Release'
 )

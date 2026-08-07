@@ -5,9 +5,11 @@
     <LangVersion>14.0</LangVersion>
     <Nullable>enable</Nullable>
     <PackageId>BitcoderCZ.Buffers</PackageId>
-    <Version>1.8.0</Version>
+    <Version>1.8.1</Version>
     <Description>Buffers and stuff.</Description>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">true</IsAotCompatible>
+    <VerifyReferenceAotCompatibility>true</VerifyReferenceAotCompatibility>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
   </PropertyGroup>
@@ -25,9 +27,9 @@
 
   <ItemGroup Condition="$(TargetFramework) == 'netstandard2.1'">
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
-		<Reference Include="Bcl.CollectionsMarshal">
-			<HintPath>..\..\libs\Bcl.CollectionsMarshal.dll</HintPath>
-		</Reference>
+    <Reference Include="Bcl.CollectionsMarshal">
+      <HintPath>..\..\libs\Bcl.CollectionsMarshal.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

@@ -20,7 +20,9 @@ public struct InlineList<TArray, TElement> : IList<TElement>, IReadOnlyList<TEle
     private static readonly int BufferCapacity = FixedArray.GetLength<TArray, TElement>();
 
     private int _count;
+#pragma warning disable IDE0044 // Add readonly modifier
     private TArray _buffer = default;
+#pragma warning restore IDE0044 // Add readonly modifier
     internal List<TElement>? _list;
 
     public InlineList(int capacity)

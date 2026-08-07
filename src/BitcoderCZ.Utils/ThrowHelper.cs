@@ -89,7 +89,61 @@ public static class ThrowHelper
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void ThrowIfNegative(long value, [CallerArgumentExpression("value")] string paramName = "")
+    {
+        if (value < 0)
+        {
+            ThrowArgumentOutOfRangeException(paramName, $"{paramName} cannot be negative.");
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void ThrowIfNegative(float value, [CallerArgumentExpression("value")] string paramName = "")
+    {
+        if (float.IsNegative(value))
+        {
+            ThrowArgumentOutOfRangeException(paramName, $"{paramName} cannot be negative.");
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void ThrowIfNegative(double value, [CallerArgumentExpression("value")] string paramName = "")
+    {
+        if (double.IsNegative(value))
+        {
+            ThrowArgumentOutOfRangeException(paramName, $"{paramName} cannot be negative.");
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void ThrowIfLessThan(int value, int other, [CallerArgumentExpression("value")] string paramName = "")
+    {
+        if (value < other)
+        {
+            ThrowArgumentOutOfRangeException(paramName, $"{paramName} ({value}) must be greater than or equal {other}.");
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void ThrowIfLessThan(long value, long other, [CallerArgumentExpression("value")] string paramName = "")
+    {
+        if (value < other)
+        {
+            ThrowArgumentOutOfRangeException(paramName, $"{paramName} ({value}) must be greater than or equal {other}.");
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void ThrowIfLessThan(float value, float other, [CallerArgumentExpression("value")] string paramName = "")
+    {
+        if (value < other)
+        {
+            ThrowArgumentOutOfRangeException(paramName, $"{paramName} ({value}) must be greater than or equal {other}.");
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void ThrowIfLessThan(double value, double other, [CallerArgumentExpression("value")] string paramName = "")
     {
         if (value < other)
         {
@@ -107,9 +161,45 @@ public static class ThrowHelper
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void ThrowIfGreaterThan(long value, long other, [CallerArgumentExpression("value")] string paramName = "")
+    {
+        if (value > other)
+        {
+            ThrowArgumentOutOfRangeException(paramName, $"{paramName} ({value}) must be less than or equal to {other}.");
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void ThrowIfGreaterThan(float value, float other, [CallerArgumentExpression("value")] string paramName = "")
+    {
+        if (value > other)
+        {
+            ThrowArgumentOutOfRangeException(paramName, $"{paramName} ({value}) must be less than or equal to {other}.");
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void ThrowIfGreaterThan(double value, double other, [CallerArgumentExpression("value")] string paramName = "")
+    {
+        if (value > other)
+        {
+            ThrowArgumentOutOfRangeException(paramName, $"{paramName} ({value}) must be less than or equal to {other}.");
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void ThrowIfGreaterThanOrEqualToOrNegative(int value, int other, [CallerArgumentExpression("value")] string paramName = "")
     {
         if ((uint)value >= (uint)other)
+        {
+            ThrowArgumentOutOfRangeException(paramName, $"{paramName} ({value}) must be less than {other} and non negative.");
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void ThrowIfGreaterThanOrEqualToOrNegative(long value, long other, [CallerArgumentExpression("value")] string paramName = "")
+    {
+        if ((ulong)value >= (ulong)other)
         {
             ThrowArgumentOutOfRangeException(paramName, $"{paramName} ({value}) must be less than {other} and non negative.");
         }
